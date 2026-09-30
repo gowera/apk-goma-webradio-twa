@@ -201,7 +201,7 @@ export async function createComment(input: {
         message = "Les commentaires sont réservés aux membres connectés sur gomawebradio.com.";
       else if (parsed?.message) message = decode(String(parsed.message));
     } catch { /* ignore */ }
-    console.error(`WordPress comment failed [${res.status}]: ${body}`);
+    console.error(`WordPress comment failed [${res.status}]`);
     return { ok: false, status: "error", message };
   }
   let pending = true;

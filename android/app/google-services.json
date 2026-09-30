@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "230343787989",
+    "project_id": "app-goma-webradio",
+    "storage_bucket": "app-goma-webradio.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:230343787989:android:195f3774a50e810b59a95c",
+        "android_client_info": {
+          "package_name": "com.gomawebradio.app.twa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7Ky7JSZVWtxv-L1QxpReAGEWuxP8Ufrs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

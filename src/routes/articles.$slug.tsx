@@ -107,7 +107,7 @@ function ArticlePage() {
         </div>
 
         <div className="gw-article-content mt-5 text-ink/90" dangerouslySetInnerHTML={{ __html: article.content }} />
-        <ArticleComments postId={article.id} />
+        <ArticleComments postId={article.id} articleUrl={article.link} />
       </article>
     </Screen>
   );

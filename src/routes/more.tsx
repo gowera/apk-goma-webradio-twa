@@ -49,6 +49,12 @@ function More() {
           </Link>
         ))}
       </nav>
+      <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 border-t border-line pt-4 text-xs text-inkmute">
+        <a href="https://gomawebradio.com/politique-de-confidentialite" className="underline">
+          Politique de confidentialité
+        </a>
+        <Link to="/conditions" className="underline">Conditions d’utilisation</Link>
+      </div>
     </Screen>
   );
 }

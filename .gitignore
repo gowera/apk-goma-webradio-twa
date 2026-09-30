@@ -15,6 +15,14 @@ dist-ssr
 .tanstack/**
 .nitro
 *.local
+/android/local.properties
+/android/.gradle/
+/android/build/
+/android/app/build/
+/android/gradle/wrapper/gradle-*-bin.zip
+*.jks
+*.keystore
+keystore.properties
 
 # Wrangler / Cloudflare
 .wrangler/

@@ -10,6 +10,12 @@ import {
 } from "@/lib/firebase";
 import { onMessage } from "firebase/messaging";
 
+declare global {
+  interface Window {
+    GomaAndroid?: { postMessage: (message: string) => void };
+  }
+}
+
 export type NotificationItem = {
   id: string;
   kind: "article" | "episode" | "video";
@@ -24,7 +30,9 @@ export type NotificationItem = {
 const SEEN_KEY = "gw-notif-seen";
 const PUSHED_KEY = "gw-notif-pushed";
 const FCM_TOKEN_KEY = "gw-fcm-token";
+const NATIVE_PUSH_ENABLED_KEY = "gw-native-push-enabled";
 const EVT = "gw-notif";
+const REFRESH_INTERVAL_MS = 60_000;
 
 function readSeen(): number {
   if (typeof window === "undefined") return 0;
@@ -33,10 +41,35 @@ function readSeen(): number {
 }
 
 function readPushEnabled(): boolean {
-  if (typeof window === "undefined" || typeof Notification === "undefined") return false;
+  if (typeof window === "undefined") return false;
+  if (window.GomaAndroid) return window.localStorage.getItem(NATIVE_PUSH_ENABLED_KEY) === "true";
+  if (typeof Notification === "undefined") return false;
   return (
     Notification.permission === "granted" && window.localStorage.getItem(PUSH_ENABLED_KEY) !== "0"
   );
+}
+
+function readPushedIds(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(window.localStorage.getItem(PUSHED_KEY) ?? "[]") as string[];
+  } catch {
+    return [];
+  }
+}
+
+function showSystemNotification(notification: NotificationItem) {
+  if (typeof window === "undefined" || typeof Notification === "undefined") return;
+  if (Notification.permission !== "granted") return;
+  try {
+    new Notification(notification.desc, {
+      body: notification.title,
+      icon: "/logo.png",
+      tag: notification.id,
+    });
+  } catch {
+    // Ignore browsers that reject system notifications.
+  }
 }
 
 export function useNotifications() {
@@ -51,7 +84,9 @@ export function useNotifications() {
   const [pushEnabled, setPushEnabled] = useState(false);
 
   useEffect(() => {
-    const sync = () => setSeen(readSeen());
+    const sync = () => {
+      setSeen(readSeen());
+    };
     sync();
     setHydrated(true);
     window.addEventListener(EVT, sync);
@@ -60,11 +95,20 @@ export function useNotifications() {
     syncPush();
     window.addEventListener(PUSH_SETTING_EVENT, syncPush);
     window.addEventListener("storage", syncPush);
+    const syncNativePermission = (event: Event) => {
+      const granted = (event as CustomEvent<{ granted?: boolean }>).detail?.granted === true;
+      window.localStorage.setItem(NATIVE_PUSH_ENABLED_KEY, granted ? "true" : "false");
+      setPushStatus(granted ? "granted" : "denied");
+      setPushEnabled(granted);
+      window.dispatchEvent(new Event(PUSH_SETTING_EVENT));
+    };
+    window.addEventListener("gw-native-notification-permission", syncNativePermission);
     return () => {
       window.removeEventListener(EVT, sync);
       window.removeEventListener("storage", sync);
       window.removeEventListener(PUSH_SETTING_EVENT, syncPush);
       window.removeEventListener("storage", syncPush);
+      window.removeEventListener("gw-native-notification-permission", syncNativePermission);
     };
   }, []);
 
@@ -163,25 +207,32 @@ export function useNotifications() {
     [items, seen, hydrated],
   );
 
-  // Notification système (si l'utilisateur a donné son accord)
   useEffect(() => {
-    if (!hydrated || typeof window === "undefined") return;
-    if (!pushEnabled) return;
-    let pushed: string[] = [];
-    try {
-      pushed = JSON.parse(window.localStorage.getItem(PUSHED_KEY) ?? "[]") as string[];
-    } catch {
-      /* ignore */
-    }
+    if (!hydrated || typeof window === "undefined" || !pushEnabled) return;
+    const refresh = () => {
+      void Promise.allSettled([
+        articlesQ.refetch(),
+        podcastQ.refetch(),
+        videosQ.refetch(),
+      ]);
+    };
+
+    refresh();
+    const intervalId = window.setInterval(refresh, REFRESH_INTERVAL_MS);
+    return () => window.clearInterval(intervalId);
+  }, [articlesQ.refetch, podcastQ.refetch, videosQ.refetch, pushEnabled, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated || typeof window === "undefined" || !pushEnabled || window.GomaAndroid) return;
+    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+    const pushed = readPushedIds();
     const fresh = unread.filter((n) => !pushed.includes(n.id)).slice(0, 3);
     if (!fresh.length) return;
+
     for (const n of fresh) {
-      try {
-        new Notification(n.desc, { body: n.title, icon: "/logo.png", tag: n.id });
-      } catch {
-        /* ignore */
-      }
+      showSystemNotification(n);
     }
+
     window.localStorage.setItem(
       PUSHED_KEY,
       JSON.stringify([...fresh.map((n) => n.id), ...pushed].slice(0, 60)),
@@ -196,6 +247,10 @@ export function useNotifications() {
   }, []);
 
   const enablePush = useCallback(async () => {
+    if (typeof window !== "undefined" && window.GomaAndroid) {
+      window.GomaAndroid.postMessage(JSON.stringify({ action: "request-notification-permission" }));
+      return "native-requested" as const;
+    }
     try {
       const status = await enableFirebasePush();
       setPushStatus(status);
@@ -209,6 +264,13 @@ export function useNotifications() {
   }, []);
 
   const disablePush = useCallback(async () => {
+    if (typeof window !== "undefined" && window.GomaAndroid) {
+      window.localStorage.setItem(NATIVE_PUSH_ENABLED_KEY, "false");
+      window.GomaAndroid.postMessage(JSON.stringify({ action: "disable-native-push" }));
+      setPushEnabled(false);
+      setPushStatus("denied");
+      return;
+    }
     await disableFirebasePush();
     setPushEnabled(false);
   }, []);

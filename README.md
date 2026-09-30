@@ -22,3 +22,13 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Android release
+
+The Android app targets API 36. Release signing credentials are read from Gradle properties or environment variables; never commit the keystore or its passwords.
+
+Gradle properties: `RELEASE_STORE_FILE`, `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD`.
+
+Equivalent environment variables: `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`.
+
+Build the Play bundle from the repository root with `android\gradlew.bat -p android :app:bundleRelease` after configuring all four values.
