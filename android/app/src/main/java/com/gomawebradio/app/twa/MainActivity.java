@@ -140,6 +140,8 @@ public class MainActivity extends AppCompatActivity {
                         String action = payload.optString("action");
                         if ("request-notification-permission".equals(action)) {
                             requestNotificationPermission();
+                        } else if ("disable-native-push".equals(action)) {
+                            MyFirebaseMessagingService.disablePush(this);
                         } else if ("status".equals(action)) {
                             updateStatusBarColor(payload.optString("color"));
                         }
@@ -166,6 +168,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void notifyWebNotificationPermission(boolean granted) {
+        if (granted) {
+            MyFirebaseMessagingService.enablePush(this);
+        } else {
+            MyFirebaseMessagingService.disablePush(this);
+        }
         if (webView != null) {
             webView.evaluateJavascript(
                     "window.dispatchEvent(new CustomEvent('gw-native-notification-permission',{detail:{granted:"
