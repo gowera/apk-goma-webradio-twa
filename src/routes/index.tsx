@@ -76,7 +76,7 @@ function Home() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => toggle(LIVE_TRACK)}
-                aria-label={isLive ? "Pause" : "Écouter en direct"}
+                aria-label={isLoadingLive ? "Annuler la connexion" : isLive ? "Pause" : "Écouter en direct"}
                 className="flex h-16 w-16 items-center justify-center rounded-full bg-blood text-white shadow-lift transition-transform active:scale-95"
               >
                 <span

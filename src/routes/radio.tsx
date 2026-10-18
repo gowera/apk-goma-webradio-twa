@@ -89,7 +89,7 @@ function Radio() {
             className={"h-full w-full object-contain transition-transform " + (isLive ? "animate-pulse-slow" : "")}
           />
           <button
-            aria-label={isLive ? "Pause" : "Lecture"}
+            aria-label={isLoading ? "Annuler la connexion" : isLive ? "Pause" : "Lecture"}
             onClick={() => toggle(LIVE_TRACK)}
             className={
               "absolute inset-0 m-auto flex h-20 w-20 items-center justify-center rounded-full bg-blood/90 text-white shadow-lift transition-transform active:scale-95 " +
