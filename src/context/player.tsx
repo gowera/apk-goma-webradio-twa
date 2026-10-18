@@ -1,5 +1,4 @@
 import {
-  createContext,
   useCallback,
   useContext,
   useEffect,
@@ -9,19 +8,10 @@ import {
   type ReactNode,
 } from "react";
 import { RadioRecovery } from "@/lib/radio-recovery";
+import { PlayerContext, type PlayerState, type Track, type Quality } from "./player-context";
+export type { Track, Quality } from "./player-context";
 
 export const RADIO_STREAM = "https://stream.zeno.fm/4d61wprrp7zuv";
-
-export type Track = {
-  id: string;
-  kind: "radio" | "podcast";
-  title: string;
-  subtitle: string;
-  artwork: string | null;
-  src: string;
-};
-
-export type Quality = "Auto" | "Normale" | "Haute";
 
 export const LIVE_TRACK: Track = {
   id: "live",
@@ -53,36 +43,6 @@ function readPersisted(): Partial<Persisted> {
     return {};
   }
 }
-
-type PlayerState = {
-  track: Track | null;
-  playing: boolean;
-  loading: boolean;
-  volume: number;
-  muted: boolean;
-  progress: number;
-  duration: number;
-  quality: Quality;
-  rate: number;
-  queue: Track[];
-  hasNext: boolean;
-  hasPrev: boolean;
-  setQueue: (tracks: Track[]) => void;
-  playNext: () => void;
-  playPrev: () => void;
-  setRate: (r: number) => void;
-  setQuality: (q: Quality) => void;
-  play: (track: Track) => void;
-  toggle: (track?: Track) => void;
-  stop: () => void;
-  seek: (seconds: number) => void;
-  skip: (delta: number) => void;
-  setVolume: (v: number) => void;
-  toggleMute: () => void;
-  setFavoriteHandler: (fn: ((track: Track) => void) | null) => void;
-};
-
-const PlayerContext = createContext<PlayerState | null>(null);
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
