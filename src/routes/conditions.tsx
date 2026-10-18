@@ -5,6 +5,10 @@ export const Route = createFileRoute("/conditions")({
   component: Conditions,
   head: () => ({
     meta: [
+      { property: "og:title", content: "Conditions d’utilisation — GOMA WEBRADIO" },
+      { property: "og:description", content: "Conditions de publication et de modération des commentaires Goma Webradio." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Conditions d’utilisation — GOMA WEBRADIO" },
       { name: "description", content: "Conditions de publication et de modération des commentaires Goma Webradio." },
     ],

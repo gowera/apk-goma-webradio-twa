@@ -6,6 +6,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
@@ -13,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { PlayerProvider } from "../context/player";
 import { PushPrompt } from "../components/PushPrompt";
+import { ReviewPrompt } from "../components/ReviewPrompt";
 
 const themeBootScript = `
 try {
@@ -61,7 +63,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
@@ -164,6 +166,7 @@ function RootComponent() {
       <PlayerProvider>
         <Outlet />
         <PushPrompt />
+        <ReviewPrompt />
       </PlayerProvider>
     </QueryClientProvider>
   );

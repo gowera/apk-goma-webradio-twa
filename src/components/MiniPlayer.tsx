@@ -70,7 +70,7 @@ export function MiniPlayer() {
         )}
 
         <button
-          aria-label={playing ? "Pause" : "Lecture"}
+          aria-label={loading && track.kind === "radio" ? "Annuler la connexion" : playing ? "Pause" : "Lecture"}
           onClick={() => toggle()}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blood text-white shadow-soft active:scale-95"
         >

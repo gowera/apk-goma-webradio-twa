@@ -21,6 +21,8 @@ export const Route = createFileRoute("/podcasts/serie/$slug")({
     const description = s?.description ?? "Les épisodes de cette série sur Goma Webradio.";
     return {
       meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
         { title },
         { name: "description", content: description },
         { property: "og:title", content: title },

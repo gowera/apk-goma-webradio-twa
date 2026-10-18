@@ -26,8 +26,8 @@ import { Route as CategoriesSlugRouteImport } from './routes/categories.$slug'
 import { Route as NewsSlugRouteImport } from './routes/news.$slug'
 import { Route as PodcastsIndexRouteImport } from './routes/podcasts.index'
 import { Route as PodcastsIdRouteImport } from './routes/podcasts.$id'
-import { Route as PodcastsSerieSlugRouteImport } from './routes/podcasts.serie.$slug'
 import { Route as ApiPublicNotifyRouteImport } from './routes/api/public/notify'
+import { Route as PodcastsSerieSlugRouteImport } from './routes/podcasts.serie.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -94,14 +94,14 @@ const ArticlesSlugRoute = ArticlesSlugRouteImport.update({
   path: '/articles/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const NewsSlugRoute = NewsSlugRouteImport.update({
-  id: '/news/$slug',
-  path: '/news/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
   id: '/categories/$slug',
   path: '/categories/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsSlugRoute = NewsSlugRouteImport.update({
+  id: '/news/$slug',
+  path: '/news/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PodcastsIndexRoute = PodcastsIndexRouteImport.update({
@@ -114,14 +114,14 @@ const PodcastsIdRoute = PodcastsIdRouteImport.update({
   path: '/podcasts/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PodcastsSerieSlugRoute = PodcastsSerieSlugRouteImport.update({
-  id: '/podcasts/serie/$slug',
-  path: '/podcasts/serie/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicNotifyRoute = ApiPublicNotifyRouteImport.update({
   id: '/api/public/notify',
   path: '/api/public/notify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PodcastsSerieSlugRoute = PodcastsSerieSlugRouteImport.update({
+  id: '/podcasts/serie/$slug',
+  path: '/podcasts/serie/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -370,18 +370,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArticlesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/news/$slug': {
-      id: '/news/$slug'
-      path: '/news/$slug'
-      fullPath: '/news/$slug'
-      preLoaderRoute: typeof NewsSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/categories/$slug': {
       id: '/categories/$slug'
       path: '/categories/$slug'
       fullPath: '/categories/$slug'
       preLoaderRoute: typeof CategoriesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news/$slug': {
+      id: '/news/$slug'
+      path: '/news/$slug'
+      fullPath: '/news/$slug'
+      preLoaderRoute: typeof NewsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/podcasts/': {
@@ -398,18 +398,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PodcastsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/podcasts/serie/$slug': {
-      id: '/podcasts/serie/$slug'
-      path: '/podcasts/serie/$slug'
-      fullPath: '/podcasts/serie/$slug'
-      preLoaderRoute: typeof PodcastsSerieSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/notify': {
       id: '/api/public/notify'
       path: '/api/public/notify'
       fullPath: '/api/public/notify'
       preLoaderRoute: typeof ApiPublicNotifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/podcasts/serie/$slug': {
+      id: '/podcasts/serie/$slug'
+      path: '/podcasts/serie/$slug'
+      fullPath: '/podcasts/serie/$slug'
+      preLoaderRoute: typeof PodcastsSerieSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
   }

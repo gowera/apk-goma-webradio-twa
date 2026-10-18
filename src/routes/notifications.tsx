@@ -9,6 +9,8 @@ export const Route = createFileRoute("/notifications")({
   component: Notifications,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Notifications — GOMA WEBRADIO" },
       {
         name: "description",

@@ -15,6 +15,8 @@ export const Route = createFileRoute("/podcasts/")({
   },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Podcasts — GOMA WEBRADIO" },
       { name: "description", content: "Reportages, magazines et émissions à la demande de Goma Webradio." },
       { property: "og:title", content: "Podcasts — GOMA WEBRADIO" },

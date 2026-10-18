@@ -6,6 +6,8 @@ export const Route = createFileRoute("/more")({
   component: More,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Plus — GOMA WEBRADIO" },
       { name: "description", content: "Programmes, favoris, notifications, paramètres et à propos de Goma Webradio." },
       { property: "og:title", content: "Plus — GOMA WEBRADIO" },

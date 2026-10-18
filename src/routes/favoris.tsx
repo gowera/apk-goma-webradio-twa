@@ -6,6 +6,8 @@ export const Route = createFileRoute("/favoris")({
   component: Favoris,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Favoris — GOMA WEBRADIO" },
       { name: "description", content: "Vos podcasts et articles enregistrés sur Goma Webradio." },
       { property: "og:title", content: "Favoris — GOMA WEBRADIO" },

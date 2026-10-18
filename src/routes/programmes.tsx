@@ -7,6 +7,8 @@ export const Route = createFileRoute("/programmes")({
   component: Programmes,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Programmes — GOMA WEBRADIO" },
       { name: "description", content: "La grille des émissions de Goma Webradio, heure par heure." },
       { property: "og:title", content: "Programmes — GOMA WEBRADIO" },

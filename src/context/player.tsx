@@ -1,5 +1,4 @@
 import {
-  createContext,
   useCallback,
   useContext,
   useEffect,
@@ -8,19 +7,11 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { RadioRecovery } from "@/lib/radio-recovery";
+import { PlayerContext, type PlayerState, type Track, type Quality } from "./player-context";
+export type { Track, Quality } from "./player-context";
 
 export const RADIO_STREAM = "https://stream.zeno.fm/4d61wprrp7zuv";
-
-export type Track = {
-  id: string;
-  kind: "radio" | "podcast";
-  title: string;
-  subtitle: string;
-  artwork: string | null;
-  src: string;
-};
-
-export type Quality = "Auto" | "Normale" | "Haute";
 
 export const LIVE_TRACK: Track = {
   id: "live",
@@ -53,38 +44,9 @@ function readPersisted(): Partial<Persisted> {
   }
 }
 
-type PlayerState = {
-  track: Track | null;
-  playing: boolean;
-  loading: boolean;
-  volume: number;
-  muted: boolean;
-  progress: number;
-  duration: number;
-  quality: Quality;
-  rate: number;
-  queue: Track[];
-  hasNext: boolean;
-  hasPrev: boolean;
-  setQueue: (tracks: Track[]) => void;
-  playNext: () => void;
-  playPrev: () => void;
-  setRate: (r: number) => void;
-  setQuality: (q: Quality) => void;
-  play: (track: Track) => void;
-  toggle: (track?: Track) => void;
-  stop: () => void;
-  seek: (seconds: number) => void;
-  skip: (delta: number) => void;
-  setVolume: (v: number) => void;
-  toggleMute: () => void;
-  setFavoriteHandler: (fn: ((track: Track) => void) | null) => void;
-};
-
-const PlayerContext = createContext<PlayerState | null>(null);
-
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const recoveryRef = useRef<RadioRecovery | null>(null);
   const [track, setTrack] = useState<Track | null>(null);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -103,6 +65,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const audio = new Audio();
     audio.preload = "none";
     audioRef.current = audio;
+    const recovery = new RadioRecovery(audio, () => setLoading(true));
+    recoveryRef.current = recovery;
 
     // Restauration de l'état persisté
     const saved = readPersisted();
@@ -135,25 +99,35 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         resumeAtRef.current = 0;
       }
     };
-    const onPlay = () => { setPlaying(true); setLoading(false); };
-    const onPause = () => setPlaying(false);
-    const onWaiting = () => setLoading(true);
-    const onEnded = () => { setPlaying(false); setProgress(0); };
-    const onError = () => { setLoading(false); setPlaying(false); };
+    const onPlay = () => { recovery.playing(); setPlaying(true); setLoading(false); };
+    const onPause = () => { setPlaying(false); if (recovery.isActive()) recovery.interrupted(); };
+    const onWaiting = () => { setLoading(true); recovery.interrupted(true); };
+    const onEnded = () => { setPlaying(false); setProgress(0); if (recovery.isActive()) recovery.interrupted(); };
+    const onError = () => { setPlaying(false); if (recovery.isActive()) recovery.interrupted(); else setLoading(false); };
+    const onOnline = () => recovery.online();
+    const onVisible = () => { if (document.visibilityState === "visible") recovery.online(); };
+    window.addEventListener("online", onOnline);
+    document.addEventListener("visibilitychange", onVisible);
     audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("loadedmetadata", onMeta);
     audio.addEventListener("playing", onPlay);
     audio.addEventListener("pause", onPause);
     audio.addEventListener("waiting", onWaiting);
+    audio.addEventListener("stalled", onWaiting);
     audio.addEventListener("ended", onEnded);
     audio.addEventListener("error", onError);
     return () => {
+      recovery.cancel();
+      recoveryRef.current = null;
+      window.removeEventListener("online", onOnline);
+      document.removeEventListener("visibilitychange", onVisible);
       audio.pause();
       audio.removeEventListener("timeupdate", onTime);
       audio.removeEventListener("loadedmetadata", onMeta);
       audio.removeEventListener("playing", onPlay);
       audio.removeEventListener("pause", onPause);
       audio.removeEventListener("waiting", onWaiting);
+      audio.removeEventListener("stalled", onWaiting);
       audio.removeEventListener("ended", onEnded);
       audio.removeEventListener("error", onError);
     };
@@ -179,6 +153,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const play = useCallback((next: Track) => {
     const audio = audioRef.current;
     if (!audio) return;
+    recoveryRef.current?.cancel();
     if (track?.id !== next.id) {
       audio.src = next.kind === "radio" ? `${next.src}?t=${Date.now()}` : next.src;
       setProgress(0);
@@ -188,29 +163,41 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       audio.src = next.kind === "radio" ? `${next.src}?t=${Date.now()}` : next.src;
     }
     setLoading(true);
-    
+    if (next.kind === "radio") {
+      recoveryRef.current?.start(next.src);
+      return;
+    }
     void audio.play().catch(() => setLoading(false));
   }, [track?.id]);
+
+  const pause = useCallback(() => {
+    recoveryRef.current?.cancel();
+    audioRef.current?.pause();
+    setPlaying(false);
+    setLoading(false);
+  }, []);
 
   const toggle = useCallback((next?: Track) => {
     const audio = audioRef.current;
     if (!audio) return;
     const target = next ?? track;
     if (!target) return;
-    if (track?.id === target.id && !audio.paused) {
-      audio.pause();
+    if (track?.id === target.id && (!audio.paused || recoveryRef.current?.isActive())) {
+      pause();
       return;
     }
     play(target);
-  }, [play, track]);
+  }, [play, track, pause]);
 
   const stop = useCallback(() => {
+    recoveryRef.current?.cancel();
     const audio = audioRef.current;
     if (!audio) return;
     audio.pause();
     audio.removeAttribute("src");
     setTrack(null);
     setPlaying(false);
+    setLoading(false);
     setProgress(0);
   }, []);
 
@@ -296,8 +283,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       });
     } catch { /* ignore */ }
 
-    safe("play", () => { void audioRef.current?.play(); });
-    safe("pause", () => audioRef.current?.pause());
+    safe("play", () => play(track));
+    safe("pause", pause);
     safe("stop", () => stop());
     safe("previoustrack", hasPrev ? () => playPrev() : null);
     safe("nexttrack", hasNext ? () => playNext() : null);
@@ -321,7 +308,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       (["play", "pause", "stop", "previoustrack", "nexttrack", "seekbackward", "seekforward", "seekto"] as MediaSessionAction[])
         .forEach((a) => { try { ms.setActionHandler(a, null); } catch { /* ignore */ } });
     };
-  }, [track, hasPrev, hasNext, playNext, playPrev, seek, skip, stop]);
+  }, [track, hasPrev, hasNext, playNext, playPrev, seek, skip, stop, play, pause]);
 
   useEffect(() => {
     if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;

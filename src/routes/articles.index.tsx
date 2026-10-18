@@ -21,6 +21,8 @@ export const Route = createFileRoute("/articles/")({
   },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Actualités — GOMA WEBRADIO" },
       { name: "description", content: "Toute l'actualité de Goma, du Nord-Kivu et de la RDC." },
       { property: "og:title", content: "Actualités — GOMA WEBRADIO" },
