@@ -19,6 +19,7 @@ export const Route = createFileRoute("/radio")({
   },
   head: () => ({
     meta: [
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Radio en direct — GOMA WEBRADIO" },
       { name: "description", content: "Écoutez le flux live de Goma Webradio, 24h/24 depuis le Nord-Kivu." },
       { property: "og:title", content: "Radio en direct — GOMA WEBRADIO" },

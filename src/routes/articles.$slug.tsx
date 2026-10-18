@@ -14,6 +14,7 @@ export const Route = createFileRoute("/articles/$slug")({
   loader: ({ context, params }) => context.queryClient.ensureQueryData(articleQuery(params.slug)).catch(() => null),
   head: ({ loaderData, params }) => ({
     meta: [
+      { name: "twitter:card", content: "summary_large_image" },
       { title: `${loaderData?.title ?? "Article"} — GOMA WEBRADIO` },
       { name: "description", content: loaderData?.excerpt ?? "Actualité de Goma Webradio." },
       { property: "og:title", content: loaderData?.title ?? "Article" },

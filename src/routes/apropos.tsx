@@ -11,6 +11,8 @@ export const Route = createFileRoute("/apropos")({
   component: APropos,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "À propos — GOMA WEBRADIO" },
       { name: "description", content: "GOMA WEBRADIO, média digital de Goma : radio, podcasts et actualités du Nord-Kivu." },
       { property: "og:title", content: "À propos — GOMA WEBRADIO" },

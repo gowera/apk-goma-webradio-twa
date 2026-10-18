@@ -16,6 +16,7 @@ export const Route = createFileRoute("/videos")({
   },
   head: () => ({
     meta: [
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Vidéos — GOMA WEBRADIO" },
       { name: "description", content: "Reportages, magazines et émissions filmées de Goma Webradio, à regarder dans l'application." },
       { property: "og:title", content: "Vidéos — GOMA WEBRADIO" },

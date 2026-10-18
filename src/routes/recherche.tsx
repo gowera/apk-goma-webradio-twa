@@ -9,6 +9,8 @@ export const Route = createFileRoute("/recherche")({
   component: Recherche,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Recherche — GOMA WEBRADIO" },
       { name: "description", content: "Recherchez des podcasts et des articles sur Goma Webradio." },
       { property: "og:title", content: "Recherche — GOMA WEBRADIO" },

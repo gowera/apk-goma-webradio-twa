@@ -20,6 +20,8 @@ export const Route = createFileRoute("/podcasts/$id")({
   },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Épisode — Podcasts GOMA WEBRADIO" },
       { name: "description", content: "Écoutez cet épisode des podcasts de Goma Webradio." },
       { property: "og:title", content: "Épisode — Podcasts GOMA WEBRADIO" },
