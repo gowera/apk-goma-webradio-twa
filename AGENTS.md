@@ -10,4 +10,5 @@
 <!-- LOVABLE:END -->
 
 - Keep radio reconnection intent in the browser-safe RadioRecovery controller, separate from audio events, so automatic pauses retry but explicit pauses and podcast switches cancel recovery.
+- Define PlayerContext and its types in a separate non-component module so hot updates cannot replace the context identity while mounted providers remain active.
 - Use the shared app-store URL for app sharing and the global dismissible review prompt so distribution links stay consistent.
