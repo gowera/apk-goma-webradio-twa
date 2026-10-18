@@ -10,6 +10,8 @@ import { prettyDuration, shareContent } from "@/lib/format";
 import { useNowPlaying } from "@/hooks/useNowPlaying";
 import { Marquee } from "@/components/Marquee";
 import { PLAY_BG_URL, RADIO_NAME, RADIO_SLOGAN, SOCIALS } from "@/lib/media";
+import { APP_STORE_URL } from "@/lib/app-store";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -28,6 +30,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Accueil — GOMA WEBRADIO" },
       { property: "og:description", content: "Écoute en direct, podcasts et actualités du Nord-Kivu." },
       { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "/" }],
   }),
@@ -94,13 +97,13 @@ function Home() {
                 ))}
               </div>
               <div className="ml-auto flex gap-2">
-                <button
+                <Button variant="ghost" size="icon"
                   aria-label="Partager"
-                  onClick={() => shareContent({ title: "GOMA WEBRADIO en direct" })}
-                  className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur active:scale-95"
+                  onClick={() => shareContent({ title: "GOMA WEBRADIO", url: APP_STORE_URL })}
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-foreground/15 text-primary-foreground backdrop-blur active:scale-95"
                 >
                   <span className="material-symbols-outlined">share</span>
-                </button>
+                </Button>
                 <Link
                   to="/radio"
                   aria-label="Ouvrir la radio"

@@ -1,0 +1,4 @@
+- [ ] Share the Google Play app link from Home.
+- [ ] Offer a dismissible Google Play review prompt.
+- [ ] Recover radio playback automatically until explicitly paused; test interruptions and cancellation.
+- [ ] Verify the requested flows and apply the required package security update.

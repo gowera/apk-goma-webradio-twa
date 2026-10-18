@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { PlayerProvider } from "../context/player";
 import { PushPrompt } from "../components/PushPrompt";
+import { ReviewPrompt } from "../components/ReviewPrompt";
 
 const themeBootScript = `
 try {
@@ -164,6 +165,7 @@ function RootComponent() {
       <PlayerProvider>
         <Outlet />
         <PushPrompt />
+        <ReviewPrompt />
       </PlayerProvider>
     </QueryClientProvider>
   );
