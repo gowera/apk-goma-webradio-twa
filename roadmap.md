@@ -2,3 +2,5 @@
 - [x] Offer a dismissible Google Play review prompt.
 - [x] Recover radio playback automatically until explicitly paused; test interruptions and cancellation.
 - [x] Verify the requested flows and apply the required package security update.
+- [ ] Connect in-app signup, login and profiles to the existing rewards plugin — blocked pending its ZIP or API documentation.
+- [ ] Integrate referral and points flows with plugin-only storage — blocked pending its ZIP or API documentation.
