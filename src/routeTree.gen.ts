@@ -12,13 +12,19 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AproposRouteImport } from './routes/apropos'
 import { Route as ConditionsRouteImport } from './routes/conditions'
+import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as FavorisRouteImport } from './routes/favoris'
+import { Route as InscriptionRouteImport } from './routes/inscription'
 import { Route as MoreRouteImport } from './routes/more'
+import { Route as MotDePasseOublieRouteImport } from './routes/mot-de-passe-oublie'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as ParametresRouteImport } from './routes/parametres'
 import { Route as ProgrammesRouteImport } from './routes/programmes'
 import { Route as RadioRouteImport } from './routes/radio'
 import { Route as RechercheRouteImport } from './routes/recherche'
+import { Route as RecompensesRouteImport } from './routes/recompenses'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as VerificationRouteImport } from './routes/verification'
 import { Route as VideosRouteImport } from './routes/videos'
 import { Route as ArticlesIndexRouteImport } from './routes/articles.index'
 import { Route as ArticlesSlugRouteImport } from './routes/articles.$slug'
@@ -44,14 +50,29 @@ const ConditionsRoute = ConditionsRouteImport.update({
   path: '/conditions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConnexionRoute = ConnexionRouteImport.update({
+  id: '/connexion',
+  path: '/connexion',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FavorisRoute = FavorisRouteImport.update({
   id: '/favoris',
   path: '/favoris',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InscriptionRoute = InscriptionRouteImport.update({
+  id: '/inscription',
+  path: '/inscription',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MoreRoute = MoreRouteImport.update({
   id: '/more',
   path: '/more',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotDePasseOublieRoute = MotDePasseOublieRouteImport.update({
+  id: '/mot-de-passe-oublie',
+  path: '/mot-de-passe-oublie',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotificationsRoute = NotificationsRouteImport.update({
@@ -77,6 +98,21 @@ const RadioRoute = RadioRouteImport.update({
 const RechercheRoute = RechercheRouteImport.update({
   id: '/recherche',
   path: '/recherche',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecompensesRoute = RecompensesRouteImport.update({
+  id: '/recompenses',
+  path: '/recompenses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerificationRoute = VerificationRouteImport.update({
+  id: '/verification',
+  path: '/verification',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VideosRoute = VideosRouteImport.update({
@@ -129,13 +165,19 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/apropos': typeof AproposRoute
   '/conditions': typeof ConditionsRoute
+  '/connexion': typeof ConnexionRoute
   '/favoris': typeof FavorisRoute
+  '/inscription': typeof InscriptionRoute
   '/more': typeof MoreRoute
+  '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/notifications': typeof NotificationsRoute
   '/parametres': typeof ParametresRoute
   '/programmes': typeof ProgrammesRoute
   '/radio': typeof RadioRoute
   '/recherche': typeof RechercheRoute
+  '/recompenses': typeof RecompensesRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/verification': typeof VerificationRoute
   '/videos': typeof VideosRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/categories/$slug': typeof CategoriesSlugRoute
@@ -150,13 +192,19 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/apropos': typeof AproposRoute
   '/conditions': typeof ConditionsRoute
+  '/connexion': typeof ConnexionRoute
   '/favoris': typeof FavorisRoute
+  '/inscription': typeof InscriptionRoute
   '/more': typeof MoreRoute
+  '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/notifications': typeof NotificationsRoute
   '/parametres': typeof ParametresRoute
   '/programmes': typeof ProgrammesRoute
   '/radio': typeof RadioRoute
   '/recherche': typeof RechercheRoute
+  '/recompenses': typeof RecompensesRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/verification': typeof VerificationRoute
   '/videos': typeof VideosRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/categories/$slug': typeof CategoriesSlugRoute
@@ -172,13 +220,19 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/apropos': typeof AproposRoute
   '/conditions': typeof ConditionsRoute
+  '/connexion': typeof ConnexionRoute
   '/favoris': typeof FavorisRoute
+  '/inscription': typeof InscriptionRoute
   '/more': typeof MoreRoute
+  '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/notifications': typeof NotificationsRoute
   '/parametres': typeof ParametresRoute
   '/programmes': typeof ProgrammesRoute
   '/radio': typeof RadioRoute
   '/recherche': typeof RechercheRoute
+  '/recompenses': typeof RecompensesRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/verification': typeof VerificationRoute
   '/videos': typeof VideosRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/categories/$slug': typeof CategoriesSlugRoute
@@ -195,13 +249,19 @@ export interface FileRouteTypes {
     | '/'
     | '/apropos'
     | '/conditions'
+    | '/connexion'
     | '/favoris'
+    | '/inscription'
     | '/more'
+    | '/mot-de-passe-oublie'
     | '/notifications'
     | '/parametres'
     | '/programmes'
     | '/radio'
     | '/recherche'
+    | '/recompenses'
+    | '/reset-password'
+    | '/verification'
     | '/videos'
     | '/articles/$slug'
     | '/categories/$slug'
@@ -216,13 +276,19 @@ export interface FileRouteTypes {
     | '/'
     | '/apropos'
     | '/conditions'
+    | '/connexion'
     | '/favoris'
+    | '/inscription'
     | '/more'
+    | '/mot-de-passe-oublie'
     | '/notifications'
     | '/parametres'
     | '/programmes'
     | '/radio'
     | '/recherche'
+    | '/recompenses'
+    | '/reset-password'
+    | '/verification'
     | '/videos'
     | '/articles/$slug'
     | '/categories/$slug'
@@ -237,13 +303,19 @@ export interface FileRouteTypes {
     | '/'
     | '/apropos'
     | '/conditions'
+    | '/connexion'
     | '/favoris'
+    | '/inscription'
     | '/more'
+    | '/mot-de-passe-oublie'
     | '/notifications'
     | '/parametres'
     | '/programmes'
     | '/radio'
     | '/recherche'
+    | '/recompenses'
+    | '/reset-password'
+    | '/verification'
     | '/videos'
     | '/articles/$slug'
     | '/categories/$slug'
@@ -259,13 +331,19 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AproposRoute: typeof AproposRoute
   ConditionsRoute: typeof ConditionsRoute
+  ConnexionRoute: typeof ConnexionRoute
   FavorisRoute: typeof FavorisRoute
+  InscriptionRoute: typeof InscriptionRoute
   MoreRoute: typeof MoreRoute
+  MotDePasseOublieRoute: typeof MotDePasseOublieRoute
   NotificationsRoute: typeof NotificationsRoute
   ParametresRoute: typeof ParametresRoute
   ProgrammesRoute: typeof ProgrammesRoute
   RadioRoute: typeof RadioRoute
   RechercheRoute: typeof RechercheRoute
+  RecompensesRoute: typeof RecompensesRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  VerificationRoute: typeof VerificationRoute
   VideosRoute: typeof VideosRoute
   ArticlesSlugRoute: typeof ArticlesSlugRoute
   CategoriesSlugRoute: typeof CategoriesSlugRoute
@@ -300,6 +378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConditionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/connexion': {
+      id: '/connexion'
+      path: '/connexion'
+      fullPath: '/connexion'
+      preLoaderRoute: typeof ConnexionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/favoris': {
       id: '/favoris'
       path: '/favoris'
@@ -307,11 +392,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FavorisRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/inscription': {
+      id: '/inscription'
+      path: '/inscription'
+      fullPath: '/inscription'
+      preLoaderRoute: typeof InscriptionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/more': {
       id: '/more'
       path: '/more'
       fullPath: '/more'
       preLoaderRoute: typeof MoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mot-de-passe-oublie': {
+      id: '/mot-de-passe-oublie'
+      path: '/mot-de-passe-oublie'
+      fullPath: '/mot-de-passe-oublie'
+      preLoaderRoute: typeof MotDePasseOublieRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notifications': {
@@ -347,6 +446,27 @@ declare module '@tanstack/react-router' {
       path: '/recherche'
       fullPath: '/recherche'
       preLoaderRoute: typeof RechercheRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recompenses': {
+      id: '/recompenses'
+      path: '/recompenses'
+      fullPath: '/recompenses'
+      preLoaderRoute: typeof RecompensesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verification': {
+      id: '/verification'
+      path: '/verification'
+      fullPath: '/verification'
+      preLoaderRoute: typeof VerificationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/videos': {
@@ -419,13 +539,19 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AproposRoute: AproposRoute,
   ConditionsRoute: ConditionsRoute,
+  ConnexionRoute: ConnexionRoute,
   FavorisRoute: FavorisRoute,
+  InscriptionRoute: InscriptionRoute,
   MoreRoute: MoreRoute,
+  MotDePasseOublieRoute: MotDePasseOublieRoute,
   NotificationsRoute: NotificationsRoute,
   ParametresRoute: ParametresRoute,
   ProgrammesRoute: ProgrammesRoute,
   RadioRoute: RadioRoute,
   RechercheRoute: RechercheRoute,
+  RecompensesRoute: RecompensesRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  VerificationRoute: VerificationRoute,
   VideosRoute: VideosRoute,
   ArticlesSlugRoute: ArticlesSlugRoute,
   CategoriesSlugRoute: CategoriesSlugRoute,

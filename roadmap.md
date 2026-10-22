@@ -2,5 +2,6 @@
 - [x] Offer a dismissible Google Play review prompt.
 - [x] Recover radio playback automatically until explicitly paused; test interruptions and cancellation.
 - [x] Verify the requested flows and apply the required package security update.
-- [ ] Connect in-app signup, login and profiles to the existing rewards plugin — blocked pending its ZIP or API documentation.
-- [ ] Integrate referral and points flows with plugin-only storage — blocked pending its ZIP or API documentation.
+- [ ] Create an installable WordPress-only accounts, referral and rewards plugin with administrator controls and security tests.
+- [ ] Add application signup, login, password recovery, points, gifts and referral pages connected to the plugin.
+- [ ] Connect article reading/sharing and live listening rewards; verify the flows and deliver the inspected plugin ZIP.

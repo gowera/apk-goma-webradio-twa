@@ -1,0 +1,60 @@
+<?php
+// Run only on an isolated WordPress: wp eval-file tests/integration.php
+if (!defined('ABSPATH') || !defined('WP_CLI') || !WP_CLI) exit;
+$seq=bin2hex(random_bytes(4)); $token=''; $captured='';
+add_filter('pre_wp_mail',function($result,$args) use(&$captured) { $captured=$args['message']; return true; },10,2);
+function gwr_call($path,$body=null,$token='') {
+    $r=new WP_REST_Request($body===null?'GET':'POST','/goma-app/v1/'.$path);
+    if ($body!==null) $r->set_body_params($body);
+    if ($token) $r->set_header('authorization','Bearer '.$token);
+    return rest_do_request($r);
+}
+function gwr_check($ok,$label) { if (!$ok) throw new Exception('FAIL '.$label); echo 'PASS '.$label."\n"; }
+$email='integration-'.$seq.'@example.test'; $password='isolated-test-password';
+$r=gwr_call('signup',['email'=>$email,'name'=>'Test Listener','password'=>$password,'consent'=>true]);
+gwr_check($r->get_status()===200,'Signup creates WordPress listener');
+$uid=email_exists($email);
+gwr_check(in_array('gwr_listener',get_userdata($uid)->roles,true),'No WordPress admin permissions');
+gwr_check(gwr_call('login',['email'=>$email,'password'=>$password])->get_status()===403,'Unverified account cannot sign in');
+preg_match('/token=([a-f0-9]+)/',$captured,$m);
+$r=gwr_call('verify',['email'=>$email,'token'=>$m[1]??'']); gwr_check($r->get_status()===200,'Email verification');
+gwr_check(gwr_call('verify',['email'=>$email,'token'=>$m[1]??''])->get_status()===400,'Verification replay denied');
+$r=gwr_call('login',['email'=>$email,'password'=>$password]); $token=$r->get_data()['token']??'';
+gwr_check(strlen($token)===64,'Login issues session');
+gwr_check(gwr_call('me')->get_status()===401,'Anonymous private access denied');
+gwr_check(gwr_call('me',null,str_repeat('a',64))->get_status()===401,'Forged token denied');
+$r=gwr_call('event',['kind'=>'share_app','points'=>99999,'user_id'=>1],$token); gwr_check($r->get_data()['awarded']===7,'App sharing exactly 7 ignores forged points/user');
+gwr_check(gwr_call('event',['kind'=>'share_app'],$token)->get_data()['awarded']===0,'Repeated app share does not duplicate');
+$post=wp_insert_post(['post_title'=>'Integration '.$seq,'post_status'=>'publish','post_content'=>'Test content']);
+gwr_check(gwr_call('event',['kind'=>'share_article','post_id'=>$post],$token)->get_data()['awarded']===6,'Article sharing exactly 6');
+$r=gwr_call('read',['action'=>'start','post_id'=>$post],$token); $read=$r->get_data()['token'];
+gwr_check(gwr_call('read',['action'=>'finish','post_id'=>$post,'token'=>$read],$token)->get_status()===400,'Read under30 seconds denied');
+global $wpdb;
+$wpdb->update(GWR_Store::t('reads'),['started'=>time()-31],['user_id'=>$uid,'post_id'=>$post]);
+gwr_check(gwr_call('read',['action'=>'finish','post_id'=>$post,'token'=>$read],$token)->get_data()['awarded']===3,'Article read exactly3');
+$r=gwr_call('listen',['action'=>'start'],$token); $listen=$r->get_data()['token'];
+gwr_check(gwr_call('listen',['action'=>'start'],$token)->get_status()===409,'Parallel listening session denied');
+$wpdb->update(GWR_Store::t('listens'),['seconds'=>3569,'last_tick'=>time()-30],['user_id'=>$uid]);
+$r=gwr_call('listen',['action'=>'tick','token'=>$listen,'seconds'=>999999],$token); gwr_check($r->get_data()['awarded']===0 && $r->get_data()['seconds']===3599,'No points at3599 seconds; forged duration ignored');
+$wpdb->update(GWR_Store::t('listens'),['last_tick'=>time()-1],['user_id'=>$uid]);
+gwr_check(gwr_call('listen',['action'=>'tick','token'=>$listen],$token)->get_data()['awarded']===30,'Exactly30 at3600 server seconds');
+gwr_check(gwr_call('listen',['action'=>'tick','token'=>$listen],$token)->get_data()['awarded']===0,'Hour replay does not duplicate');
+$wpdb->update(GWR_Store::t('listens'),['last_tick'=>time()-91],['user_id'=>$uid]);
+$r=gwr_call('listen',['action'=>'tick','token'=>$listen],$token);
+gwr_check($r->get_data()['seconds']===0,'Long interruption resets uncompleted hour');
+$listen=$r->get_data()['token'];
+gwr_call('listen',['action'=>'stop','token'=>$listen],$token);
+gwr_check(!$wpdb->get_var($wpdb->prepare('SELECT user_id FROM '.GWR_Store::t('listens').' WHERE user_id=%d',$uid)),'Explicit pause cancels session');
+$wpdb->insert(GWR_Store::t('gifts'),['title'=>'Test Gift','cost'=>20,'stock'=>1,'active'=>1]); $gift=$wpdb->insert_id;
+$key=wp_generate_uuid4(); $r=gwr_call('claim',['gift_id'=>$gift,'request_key'=>$key],$token); $claim=$r->get_data()['id']??0;
+gwr_check($r->get_status()===200 && $claim>0,'Gift reserved');
+gwr_check((int)gwr_call('claim',['gift_id'=>$gift,'request_key'=>$key],$token)->get_data()['id']===(int)$claim,'Gift retry idempotent');
+gwr_check(gwr_call('claim',['gift_id'=>$gift,'request_key'=>wp_generate_uuid4()],$token)->get_status()===400,'Out of stock denied');
+$me=gwr_call('me',null,$token)->get_data(); gwr_check($me['balance']===26,'Balance equals 7+6+3+30-20');
+gwr_check(gwr_call('profile',['name'=>'Updated Listener'],$token)->get_data()['name']==='Updated Listener','Profile update persists');
+$captured=''; gwr_call('forgot',['email'=>$email]); preg_match('/token=([a-f0-9]+)/',$captured,$m);
+gwr_check(gwr_call('reset',['email'=>$email,'token'=>$m[1]??'','password'=>'new-test-password'],$token)->get_status()===200,'Password recovery');
+gwr_check(gwr_call('me',null,$token)->get_status()===401,'Reset revokes old sessions');
+gwr_check(gwr_call('reset',['email'=>$email,'token'=>$m[1]??'','password'=>'another-test-password'])->get_status()===400,'Recovery token single use');
+require_once ABSPATH.'wp-admin/includes/user.php'; wp_delete_user($uid); wp_delete_post($post,true); $wpdb->delete(GWR_Store::t('gifts'),['id'=>$gift]);
+echo "ALL INTEGRATION CHECKS PASSED\n";

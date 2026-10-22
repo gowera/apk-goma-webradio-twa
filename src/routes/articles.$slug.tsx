@@ -8,6 +8,8 @@ import { formatDate, shareContent } from "@/lib/format";
 import { ErrorRetry, Skeleton } from "@/components/Async";
 import { useFavorites } from "@/hooks/useFavorites";
 import { ArticleComments } from "@/components/ArticleComments";
+import { ArticleRewards } from "@/components/ArticleRewards";
+import { creditShare } from "@/lib/rewards-api";
 
 export const Route = createFileRoute("/articles/$slug")({
   component: ArticlePage,
@@ -80,6 +82,7 @@ function ArticlePage() {
   return (
     <Screen title="Article" back>
       <article className="pt-4">
+        <ArticleRewards postId={article.id} />
         <div className="overflow-hidden rounded-2xl bg-panel2 shadow-soft">
           <SmartImage src={article.image} alt={article.title} className="max-h-[70vh] w-full object-contain" fallbackClassName="h-56 w-full bg-brand-deep object-contain p-10" />
         </div>
@@ -93,7 +96,10 @@ function ArticlePage() {
 
         <div className="mt-4 flex gap-2">
           <button
-            onClick={() => shareContent({ title: article.title, url: article.link })}
+            onClick={async () => {
+              const result = await shareContent({ title: article.title, url: article.link });
+              if (result === "shared") await creditShare("share_article", article.id);
+            }}
             className="inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2.5 text-sm font-bold text-white active:scale-95"
           >
             <span className="material-symbols-outlined" style={{ fontSize: 18 }}>share</span> Partager

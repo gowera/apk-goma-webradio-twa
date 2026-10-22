@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { PlayerProvider } from "../context/player";
 import { PushPrompt } from "../components/PushPrompt";
 import { ReviewPrompt } from "../components/ReviewPrompt";
+import { RewardsProvider } from "../components/RewardsProvider";
 
 const themeBootScript = `
 try {
@@ -29,6 +30,8 @@ const webRedirectScript = `
 (function () {
   try {
     if (location.hostname !== "app.gomawebradio.com") return;
+     // Email recovery and referral onboarding must also open outside the installed shell.
+     if (["verification", "reset-password", "connexion", "inscription", "mot-de-passe-oublie"].indexOf(location.pathname.split("/")[1]) !== -1) return;
     var installed =
       (window.matchMedia && (matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches || matchMedia("(display-mode: minimal-ui)").matches)) ||
       navigator.standalone === true ||
@@ -164,9 +167,11 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <PlayerProvider>
+        <RewardsProvider>
         <Outlet />
         <PushPrompt />
         <ReviewPrompt />
+        </RewardsProvider>
       </PlayerProvider>
     </QueryClientProvider>
   );
