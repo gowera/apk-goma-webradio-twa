@@ -13,7 +13,8 @@ final class GWR_Store {
           'listens'=>"user_id bigint unsigned NOT NULL, token varchar(64) NOT NULL, seconds int NOT NULL DEFAULT 0, last_tick bigint NOT NULL, PRIMARY KEY  (user_id)",
           'reads'=>"user_id bigint unsigned NOT NULL, post_id bigint unsigned NOT NULL, token varchar(64) NOT NULL, started bigint NOT NULL, PRIMARY KEY  (user_id,post_id)",
           'gifts'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, title varchar(120) NOT NULL, cost int NOT NULL DEFAULT 0, stock int NOT NULL DEFAULT 0, active tinyint NOT NULL DEFAULT 0, PRIMARY KEY  (id)",
-          'claims'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, user_id bigint unsigned NOT NULL, gift_id bigint unsigned NOT NULL, cost int NOT NULL, status varchar(20) NOT NULL DEFAULT 'pending', request_key varchar(64) NOT NULL, created datetime NOT NULL, PRIMARY KEY  (id), UNIQUE KEY request (user_id,request_key)"
+          'claims'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, user_id bigint unsigned NOT NULL, gift_id bigint unsigned NOT NULL, cost int NOT NULL, status varchar(20) NOT NULL DEFAULT 'pending', request_key varchar(64) NOT NULL, created datetime NOT NULL, PRIMARY KEY  (id), UNIQUE KEY request (user_id,request_key)",
+          'emails'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, user_id bigint unsigned NOT NULL, period_key varchar(10) NOT NULL, period_start datetime NOT NULL, period_end datetime NOT NULL, status varchar(20) NOT NULL, attempts int NOT NULL DEFAULT 0, next_attempt bigint NOT NULL DEFAULT 0, PRIMARY KEY  (id), UNIQUE KEY recipient_period (user_id,period_key), KEY dispatch (status,next_attempt)"
         ];
         foreach($schemas as $name=>$s) dbDelta('CREATE TABLE '.self::t($name)." ($s) ENGINE=InnoDB $c;");
         add_role('gwr_listener','Auditeur application', ['read'=>false]);
@@ -58,7 +59,7 @@ final class GWR_Store {
     }
     public static function delete_user($uid) {
         global $wpdb;
-        foreach(['accounts','sessions','ledger','listens','reads','claims'] as $t) $wpdb->delete(self::t($t),['user_id'=>$uid]);
+        foreach(['accounts','sessions','ledger','listens','reads','claims','emails'] as $t) $wpdb->delete(self::t($t),['user_id'=>$uid]);
         $wpdb->update(self::t('accounts'),['referrer'=>0],['referrer'=>$uid]);
     }
 }

@@ -1,6 +1,6 @@
 # GOMA WEBRADIO — Récompenses Application
 
-Plugin WordPress installable, version 1.0.0. WordPress 6.5+, PHP 8.0+, MySQL/MariaDB avec tables InnoDB et HTTPS requis. Les comptes et toutes les opérations de points restent sur votre WordPress ; aucun compte ni solde n’est enregistré dans Lovable Cloud.
+Plugin WordPress installable, version 1.1.0. WordPress 6.5+, PHP 8.0+, MySQL/MariaDB avec tables InnoDB et HTTPS requis. Les comptes et toutes les opérations de points restent sur votre WordPress ; aucun compte ni solde n’est enregistré dans Lovable Cloud.
 
 ## Installation
 
@@ -14,6 +14,16 @@ Plugin WordPress installable, version 1.0.0. WordPress 6.5+, PHP 8.0+, MySQL/Mar
 8. Publier les nouvelles pages de l’application, puis tester avec un vrai email depuis le téléphone.
 
 Ne pas installer les scripts de test sur votre site de production. Les fichiers `tests/` du projet sont réservés à une installation WordPress isolée et sont exclus du ZIP installable.
+
+## Pages de l’application
+
+## Rappels hebdomadaires (version 1.1.0)
+
+Installer le nouveau ZIP en remplaçant l’extension existante : les comptes et points sont conservés. Les rappels sont activés par défaut et désactivables dans **GOMA Récompenses → Emails hebdomadaires**. Chaque compte application avec email confirmé reçoit le bilan de la dernière semaine complète (lundi au dimanche, fuseau horaire WordPress), y compris 0 point si aucune action. L’email indique les points gagnés par les actions, le solde actuel, le barème, un encouragement et le lien vers les cadeaux. Les dépenses, remboursements et ajustements manuels ne modifient pas le total des gains d’actions.
+
+Envoi via `wp_mail`, donc le service email/SMTP du site, sans service Lovable. WP-Cron traite jusqu’à 100 destinataires par heure ; prévoir un cron serveur régulier si le site est peu visité. Lors de l’activation, le premier passage envoie la dernière semaine complète. Chaque utilisateur/semaine a une entrée unique dans la table `gwr_emails`. Les envois acceptés ne sont pas renvoyés ; un échec connu est retenté jusqu’à 3 fois avec une heure entre les tentatives. Un résultat inconnu après interruption n’est pas renvoyé automatiquement pour éviter les doublons. Les statistiques conservées 90 jours apparaissent dans l’administration. Acceptation par SMTP ne garantit pas la réception en boîte email.
+
+Un lien signé permet au destinataire de confirmer son désabonnement sans connexion, sans supprimer son compte ni ses points. Exclure `?gwr_email_unsubscribe=...` des caches. Les confirmations d’inscription et récupérations de mot de passe restent actives. Mettre à jour la politique de confidentialité pour mentionner ces rappels et tester un email réel après installation.
 
 ## Pages de l’application
 
