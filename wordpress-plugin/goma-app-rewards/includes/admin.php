@@ -8,6 +8,7 @@ final class GWR_Admin {
         $notice='';
         if ($_SERVER['REQUEST_METHOD']==='POST') {
             check_admin_referer('gwr_admin'); $action=sanitize_key($_POST['action']??'');
+            if ($action==='weekly') { update_option('gwr_weekly_enabled',isset($_POST['weekly_enabled'])?1:0); $notice='Réglage des rappels enregistré.'; }
             if ($action==='settings') {
                 $app=untrailingslashit(esc_url_raw(wp_unslash($_POST['app_url']??'')));
                 $origins=array_filter(array_map('trim',explode("\n",wp_unslash($_POST['origins']??''))));
@@ -51,6 +52,11 @@ final class GWR_Admin {
         $labels=['read'=>'Article lu (une fois par article)','share_app'=>'Partage application (une fois par jour)','share_article'=>'Partage article (une fois par article/jour)','listen'=>'Heure complète radio (60 minutes)','referral'=>'Bonus parrainage qualifié (0 par défaut)','read_limit'=>'Maximum articles récompensés par jour','share_article_limit'=>'Maximum partages article par jour','listen_limit'=>'Maximum heures récompensées par jour'];
         foreach($labels as $k=>$label) echo '<tr><th>'.esc_html($label).'</th><td><input type="number" min="0" max="100000" name="'.esc_attr($k).'" value="'.esc_attr($s['rules'][$k]).'"></td></tr>';
         echo '</table>'; submit_button('Enregistrer'); echo '</form><p>Partages et lecture sont des actions déclaratives, pas une preuve de publication sociale ni d’attention humaine. Écoute : temps serveur et battements de 30 secondes, intervalle maximum 90 secondes, une session par compte. Pause : progression de l’heure incomplète annulée. Parrainage qualifié : email confirmé et première action récompensée ; ne prouve pas l’installation Google Play.</p>';
+        echo '<h2>Emails hebdomadaires</h2><form method="post">'; wp_nonce_field('gwr_admin');
+        echo '<input type="hidden" name="action" value="weekly"><label><input type="checkbox" name="weekly_enabled" '.checked(get_option('gwr_weekly_enabled',1),1,false).'> Envoyer le bilan de points de la semaine aux auditeurs avec email confirmé</label> '; submit_button('Enregistrer les rappels','secondary','submit',false); echo '</form><p>Semaine du lundi au dimanche, fuseau horaire WordPress. Envoi après la fin de semaine via WP-Cron, 100 destinataires par passage. Chaque email contient le total gagné, le solde et un lien de désabonnement. Vérifiez votre service SMTP et programmez un cron serveur pour un envoi régulier même sans visiteurs.</p>';
+        echo '<p>État des envois conservés (90 jours) : ';
+        foreach($wpdb->get_results('SELECT status,COUNT(*) AS total FROM '.GWR_Store::t('emails').' GROUP BY status') as $mail_status) echo esc_html($mail_status->status.' : '.$mail_status->total).' · ';
+        echo '</p><p>« sent » signifie accepté par le service email, pas une preuve de réception. Échec : jusqu’à 3 tentatives espacées d’une heure. « unknown » : résultat inconnu après interruption, sans renvoi automatique.</p>';
         echo '<h2>Cadeaux</h2><p>Les cadeaux sont désactivés au départ : choisissez le coût, le stock réel et activez-les. Les demandes réservent les points et une unité ; annuler rembourse et remet en stock.</p>';
         $gifts=$wpdb->get_results('SELECT * FROM '.GWR_Store::t('gifts').' ORDER BY id');
         foreach(array_merge($gifts,[(object)['id'=>0,'title'=>'','cost'=>0,'stock'=>0,'active'=>0]]) as $g) {

@@ -6,4 +6,6 @@
 - [x] Add application signup, login, password recovery, points, gifts and referral pages connected to the plugin.
 - [x] Connect article reading/sharing and live listening rewards; verify the flows and deliver the inspected plugin ZIP.
 
+- [x] Add weekly WordPress reward summary emails, unsubscribe, tests and updated installable ZIP.
+
 Launch prerequisite: the site owner must install/activate the ZIP on gomawebradio.com, verify real email delivery, configure gifts and referral bonus, and publish the app changes; production and Android background listening remain unverified.
