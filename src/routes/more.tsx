@@ -18,6 +18,8 @@ export const Route = createFileRoute("/more")({
 });
 
 const links = [
+  { to: "/recompenses", icon: "redeem", label: "Mes points et cadeaux", desc: "Parrainages et club des auditeurs" },
+  { to: "/connexion", icon: "person", label: "Mon compte", desc: "Connexion et inscription" },
   { to: "/videos", icon: "smart_display", label: "Vidéos", desc: "Reportages et émissions filmées" },
   { to: "/programmes", icon: "calendar_month", label: "Programmes", desc: "Grille des émissions" },
   { to: "/favoris", icon: "favorite", label: "Favoris", desc: "Podcasts et articles enregistrés" },

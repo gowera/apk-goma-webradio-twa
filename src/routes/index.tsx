@@ -12,6 +12,7 @@ import { Marquee } from "@/components/Marquee";
 import { PLAY_BG_URL, RADIO_NAME, RADIO_SLOGAN, SOCIALS } from "@/lib/media";
 import { APP_STORE_URL } from "@/lib/app-store";
 import { Button } from "@/components/ui/button";
+import { creditShare } from "@/lib/rewards-api";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -99,7 +100,10 @@ function Home() {
               <div className="ml-auto flex gap-2">
                 <Button variant="ghost" size="icon"
                   aria-label="Partager"
-                  onClick={() => shareContent({ title: "GOMA WEBRADIO", url: APP_STORE_URL })}
+                  onClick={async () => {
+                    const result = await shareContent({ title: "GOMA WEBRADIO", url: APP_STORE_URL });
+                    if (result === "shared") await creditShare("share_app");
+                  }}
                   className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-foreground/15 text-primary-foreground backdrop-blur active:scale-95"
                 >
                   <span className="material-symbols-outlined">share</span>
@@ -119,6 +123,11 @@ function Home() {
 
 
       {/* Quick access */}
+      <Link to="/recompenses" className="mt-5 flex items-center gap-3 border-b border-line py-4 text-ink">
+        <span className="material-symbols-outlined text-3xl text-brand">redeem</span>
+        <span className="flex-1 font-bold">Mes points et cadeaux</span>
+        <span className="material-symbols-outlined text-inkmute">chevron_right</span>
+      </Link>
       <section className="mt-5 grid grid-cols-2 gap-3">
         {[
           { to: "/programmes", icon: "calendar_month", label: "Programmes" },

@@ -153,6 +153,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const play = useCallback((next: Track) => {
     const audio = audioRef.current;
     if (!audio) return;
+    if (track?.kind === "radio" && next.kind !== "radio") window.dispatchEvent(new Event("gwr-listen-stop"));
     recoveryRef.current?.cancel();
     if (track?.id !== next.id) {
       audio.src = next.kind === "radio" ? `${next.src}?t=${Date.now()}` : next.src;
@@ -171,6 +172,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [track?.id]);
 
   const pause = useCallback(() => {
+    window.dispatchEvent(new Event("gwr-listen-stop"));
     recoveryRef.current?.cancel();
     audioRef.current?.pause();
     setPlaying(false);
@@ -190,6 +192,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [play, track, pause]);
 
   const stop = useCallback(() => {
+    window.dispatchEvent(new Event("gwr-listen-stop"));
     recoveryRef.current?.cancel();
     const audio = audioRef.current;
     if (!audio) return;
