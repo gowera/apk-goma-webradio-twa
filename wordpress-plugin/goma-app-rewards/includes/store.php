@@ -16,7 +16,8 @@ final class GWR_Store {
           'claims'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, user_id bigint unsigned NOT NULL, gift_id bigint unsigned NOT NULL, cost int NOT NULL, status varchar(20) NOT NULL DEFAULT 'pending', request_key varchar(64) NOT NULL, created datetime NOT NULL, PRIMARY KEY  (id), UNIQUE KEY request (user_id,request_key)",
           'emails'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, user_id bigint unsigned NOT NULL, period_key varchar(10) NOT NULL, period_start datetime NOT NULL, period_end datetime NOT NULL, status varchar(20) NOT NULL, attempts int NOT NULL DEFAULT 0, next_attempt bigint NOT NULL DEFAULT 0, PRIMARY KEY  (id), UNIQUE KEY recipient_period (user_id,period_key), KEY dispatch (status,next_attempt)"
         ];
-        foreach($schemas as $name=>$s) dbDelta('CREATE TABLE '.self::t($name)." ($s) ENGINE=InnoDB $c;");
+        // dbDelta requires one column/index definition per line during upgrades.
+        foreach($schemas as $name=>$s) dbDelta('CREATE TABLE '.self::t($name)." (\n".str_replace(', ',",\n",$s)."\n) ENGINE=InnoDB $c;");
         add_role('gwr_listener','Auditeur application', ['read'=>false]);
         add_option('gwr_settings', ['app_url'=>'https://app.gomawebradio.com','origins'=>"https://app.gomawebradio.com\nhttps://id-preview--551fd15d-244c-43e2-a5da-7a2ab3360d7a.lovable.app", 'rules'=>GWR_Rules::defaults()]);
         if (!$wpdb->get_var('SELECT COUNT(*) FROM '.self::t('gifts'))) {

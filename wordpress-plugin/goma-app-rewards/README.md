@@ -15,8 +15,6 @@ Plugin WordPress installable, version 1.1.0. WordPress 6.5+, PHP 8.0+, MySQL/Mar
 
 Ne pas installer les scripts de test sur votre site de production. Les fichiers `tests/` du projet sont réservés à une installation WordPress isolée et sont exclus du ZIP installable.
 
-## Pages de l’application
-
 ## Rappels hebdomadaires (version 1.1.0)
 
 Installer le nouveau ZIP en remplaçant l’extension existante : les comptes et points sont conservés. Les rappels sont activés par défaut et désactivables dans **GOMA Récompenses → Emails hebdomadaires**. Chaque compte application avec email confirmé reçoit le bilan de la dernière semaine complète (lundi au dimanche, fuseau horaire WordPress), y compris 0 point si aucune action. L’email indique les points gagnés par les actions, le solde actuel, le barème, un encouragement et le lien vers les cadeaux. Les dépenses, remboursements et ajustements manuels ne modifient pas le total des gains d’actions.
