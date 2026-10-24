@@ -1,6 +1,6 @@
 export const REWARDS_API = 'https://gomawebradio.com/wp-json/goma-app/v1';
 const TOKEN_KEY = 'gwr-session';
-export type RewardRules = { read: number; share_app: number; share_article: number; listen: number; referral: number; read_limit: number; share_article_limit: number; listen_limit: number };
+export type RewardRules = { welcome: number; read: number; share_app: number; share_article: number; listen: number; referral: number; read_limit: number; share_article_limit: number; listen_limit: number };
 export type RewardUser = { id: number; name: string; email: string; balance: number; code: string; invite_url: string; referrals: number; listen_seconds: number; ledger: { id: string; kind: string; points: number; created: string }[]; claims: { id: string; title: string; status: string; cost: number; created: string }[] };
 export type Gift = { id: string; title: string; cost: string; stock: string };
 export class RewardsError extends Error { constructor(message: string, public status: number) { super(message); } }

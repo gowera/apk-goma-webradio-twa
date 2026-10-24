@@ -21,6 +21,7 @@ $r=gwr_call('verify',['email'=>$email,'token'=>$m[1]??'']); gwr_check($r->get_st
 gwr_check(gwr_call('verify',['email'=>$email,'token'=>$m[1]??''])->get_status()===400,'Verification replay denied');
 $r=gwr_call('login',['email'=>$email,'password'=>$password]); $token=$r->get_data()['token']??'';
 gwr_check(strlen($token)===64,'Login issues session');
+gwr_check(gwr_call('me',null,$token)->get_data()['balance']===30,'Welcome bonus exactly 30 at account creation');
 gwr_check(gwr_call('me')->get_status()===401,'Anonymous private access denied');
 gwr_check(gwr_call('me',null,str_repeat('a',64))->get_status()===401,'Forged token denied');
 $r=gwr_call('event',['kind'=>'share_app','points'=>99999,'user_id'=>1],$token); gwr_check($r->get_data()['awarded']===7,'App sharing exactly 7 ignores forged points/user');
@@ -62,7 +63,7 @@ $key=wp_generate_uuid4(); $r=gwr_call('claim',['gift_id'=>$gift,'request_key'=>$
 gwr_check($r->get_status()===200 && $claim>0,'Gift reserved');
 gwr_check((int)gwr_call('claim',['gift_id'=>$gift,'request_key'=>$key],$token)->get_data()['id']===(int)$claim,'Gift retry idempotent');
 gwr_check(gwr_call('claim',['gift_id'=>$gift,'request_key'=>wp_generate_uuid4()],$token)->get_status()===400,'Out of stock denied');
-$me=gwr_call('me',null,$token)->get_data(); gwr_check($me['balance']===26,'Balance equals 7+6+3+30-20');
+$me=gwr_call('me',null,$token)->get_data(); gwr_check($me['balance']===56,'Balance equals 30+7+6+3+30-20');
 gwr_check(gwr_call('profile',['name'=>'Updated Listener'],$token)->get_data()['name']==='Updated Listener','Profile update persists');
 $captured=''; gwr_call('forgot',['email'=>$email]); preg_match('/token=([a-f0-9]+)/',$captured,$m);
 gwr_check(gwr_call('reset',['email'=>$email,'token'=>$m[1]??'','password'=>'new-test-password'],$token)->get_status()===200,'Password recovery');
