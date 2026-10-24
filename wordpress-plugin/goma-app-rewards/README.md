@@ -1,6 +1,6 @@
 # GOMA WEBRADIO — Récompenses Application
 
-Plugin WordPress installable, version 1.1.0. WordPress 6.5+, PHP 8.0+, MySQL/MariaDB avec tables InnoDB et HTTPS requis. Les comptes et toutes les opérations de points restent sur votre WordPress ; aucun compte ni solde n’est enregistré dans Lovable Cloud.
+Plugin WordPress installable, version 1.2.0. WordPress 6.5+, PHP 8.0+, MySQL/MariaDB avec tables InnoDB et HTTPS requis. Les comptes et toutes les opérations de points restent sur votre WordPress ; aucun compte ni solde n’est enregistré dans Lovable Cloud.
 
 ## Installation
 
@@ -31,10 +31,17 @@ Un lien signé permet au destinataire de confirmer son désabonnement sans conne
 
 Ces comptes sont créés par le plugin pour l’application. Les comptes déjà présents sur le site ne sont pas automatiquement convertis. Un email déjà utilisé ne peut pas créer un second compte ; une migration des anciens comptes doit être décidée séparément.
 
+## Bonus de bienvenue (version 1.2.0)
+
+Chaque nouveau compte reçoit **30 points de bienvenue** à l’inscription, crédités par le serveur une seule fois par compte (montant modifiable dans le barème, 0 pour désactiver). Le bonus apparaît dans l’historique des points et dans le bilan hebdomadaire de la semaine d’inscription.
+
+Cette version corrige aussi l’autorisation d’accès depuis l’application : l’adresse configurée dans **Adresse application** est désormais toujours autorisée, même si la liste des origines est incomplète. Si la création de compte affichait « Impossible de joindre le programme de points », vérifiez quand même que **Origines autorisées** contient l’adresse HTTPS exacte de votre application publiée.
+
 ## Barème initial
 
 | Action | Points | Validation et limite initiale |
 | --- | ---: | --- |
+| Bonus de bienvenue | 30 | une seule fois par compte, à l’inscription |
 | Article lu | 3 | 30 secondes de visibilité dans l’app ; une fois par article ; 20 articles/jour |
 | Application partagée | 7 | partage confirmé par le téléphone ; une fois/jour |
 | Article partagé | 6 | une fois par article/jour ; 10 articles/jour |
