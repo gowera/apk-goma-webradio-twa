@@ -58,6 +58,9 @@ final class GWR_API {
         $ok=$wpdb->insert(GWR_Store::t('accounts'),['user_id'=>$uid,'code'=>bin2hex(random_bytes(8)),'referrer'=>$ref,'created'=>current_time('mysql',true)]);
         if (!$ok) { require_once ABSPATH.'wp-admin/includes/user.php'; wp_delete_user($uid); return self::error('Inscription non enregistrée.',503); }
         update_user_meta($uid,'gwr_consent',gmdate('c'));
+        // Welcome bonus is server-defined and idempotent: one credit per account, ever.
+        $welcome=(int)GWR_Store::settings()['rules']['welcome'];
+        if ($welcome>0) GWR_Store::atomic($uid,function() use($uid,$welcome) { return ['awarded'=>GWR_Store::credit($uid,'welcome','welcome:'.$uid,$welcome)]; });
         if (!self::send_link($uid,'verify')) return self::error('Compte créé, mais l’email n’a pas pu être envoyé. Réessayez depuis « Mot de passe oublié ».',503);
         return ['message'=>'Vérifiez votre email pour confirmer votre compte avant de vous connecter.'];
     }
@@ -208,7 +211,11 @@ final class GWR_API {
     public static function cors($served,$result,$request,$server) {
         if (strpos($request->get_route(),'/goma-app/v1/')!==0) return $served;
         header_remove('Access-Control-Allow-Origin'); header_remove('Access-Control-Allow-Credentials');
-        $origin=get_http_origin(); $allowed=array_filter(array_map('trim',explode("\n",GWR_Store::settings()['origins']??'')));
+        $origin=get_http_origin(); $settings=GWR_Store::settings();
+        $allowed=array_filter(array_map('trim',explode("\n",$settings['origins']??'')));
+        // The configured app address is always allowed, even if the origins list is stale.
+        $scheme=wp_parse_url($settings['app_url']??'',PHP_URL_SCHEME); $host=wp_parse_url($settings['app_url']??'',PHP_URL_HOST);
+        if ($scheme && $host) $allowed[]=$scheme.'://'.$host;
         if ($origin && in_array($origin,$allowed,true)) {
             header('Access-Control-Allow-Origin: '.$origin); header('Vary: Origin',false);
             header('Access-Control-Allow-Methods: GET, POST, OPTIONS'); header('Access-Control-Allow-Headers: Authorization, Content-Type');

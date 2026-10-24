@@ -2,6 +2,7 @@
 define('ABSPATH',__DIR__); require __DIR__.'/../includes/rules.php';
 function check($actual,$expected,$name) { if ($actual !== $expected) throw new Exception($name); echo "PASS $name\n"; }
 $r=GWR_Rules::defaults();
+check($r['welcome'],30,'Bonus de bienvenue : 30 points');
 check($r['read'],3,'Article lu : 3 points');
 check($r['share_app'],7,'Partage application : 7 points');
 check($r['share_article'],6,'Partage article : 6 points');

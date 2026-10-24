@@ -13,7 +13,7 @@ final class GWR_Weekly_Emails {
     public static function earned($uid,$period) {
         global $wpdb;
         // Gross action earnings, excluding gift costs, refunds and manual adjustments.
-        return (int)$wpdb->get_var($wpdb->prepare('SELECT COALESCE(SUM(points),0) FROM '.GWR_Store::t('ledger')." WHERE user_id=%d AND points>0 AND kind IN ('read','share_app','share_article','listen','referral') AND created>=%s AND created<%s",$uid,$period['start'],$period['end']));
+        return (int)$wpdb->get_var($wpdb->prepare('SELECT COALESCE(SUM(points),0) FROM '.GWR_Store::t('ledger')." WHERE user_id=%d AND points>0 AND kind IN ('welcome','read','share_app','share_article','listen','referral') AND created>=%s AND created<%s",$uid,$period['start'],$period['end']));
     }
     private static function signature($uid) {
         $user=get_userdata($uid);
@@ -62,7 +62,7 @@ final class GWR_Weekly_Emails {
                 $balance=(int)$wpdb->get_var($wpdb->prepare('SELECT balance FROM '.GWR_Store::t('accounts').' WHERE user_id=%d',$uid));
                 $rules=GWR_Store::settings()['rules'];
                 $url=GWR_Store::settings()['app_url'].'/recompenses';
-                $body="Bonjour ".$user->display_name.",\n\nVotre bilan de la semaine du ".$row->period_key." : ".$points." points gagnés.\nVotre solde actuel : ".$balance." points.\n\nContinuez à lire les articles, partager et écouter GOMA WEBRADIO pour gagner encore plus de points et avancer vers vos cadeaux !\n\nArticle lu : ".$rules['read']." points\nPartage de l’application : ".$rules['share_app']." points\nPartage d’un article : ".$rules['share_article']." points\nHeure complète de radio : ".$rules['listen']." points (rien avant 60 minutes)\n\nConsultez vos points, cadeaux et limites dans l’application :\n".$url."\n\nGOMA WEBRADIO\nFasi ya ndule na infos za palais\n\nNe plus recevoir ces rappels :\n".self::unsubscribe_url($uid);
+                $body="Bonjour ".$user->display_name.",\n\nVotre bilan de la semaine du ".$row->period_key." : ".$points." points gagnés.\nVotre solde actuel : ".$balance." points.\n\nContinuez à lire les articles, partager et écouter GOMA WEBRADIO pour gagner encore plus de points et avancer vers vos cadeaux !\n\nBonus de bienvenue : ".$rules['welcome']." points\nArticle lu : ".$rules['read']." points\nPartage de l’application : ".$rules['share_app']." points\nPartage d’un article : ".$rules['share_article']." points\nHeure complète de radio : ".$rules['listen']." points (rien avant 60 minutes)\n\nConsultez vos points, cadeaux et limites dans l’application :\n".$url."\n\nGOMA WEBRADIO\nFasi ya ndule na infos za palais\n\nNe plus recevoir ces rappels :\n".self::unsubscribe_url($uid);
                 $ok=wp_mail($user->user_email,'Votre semaine de points — GOMA WEBRADIO',$body,['Content-Type: text/plain; charset=UTF-8']);
                 $wpdb->update($table,['status'=>$ok?'sent':($attempt>=3?'failed':'pending')],['id'=>$row->id]);
             }
