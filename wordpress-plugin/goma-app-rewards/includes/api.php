@@ -214,10 +214,14 @@ final class GWR_API {
         $origin=get_http_origin(); $settings=GWR_Store::settings();
         $allowed=array_filter(array_map('trim',explode("\n",$settings['origins']??'')));
         // The configured app address is always allowed, even if the origins list is stale.
-        $scheme=wp_parse_url($settings['app_url']??'',PHP_URL_SCHEME); $host=wp_parse_url($settings['app_url']??'',PHP_URL_HOST);
-        if ($scheme && $host) $allowed[]=$scheme.'://'.$host;
+        $app=wp_parse_url($settings['app_url']??'');
+        if (is_array($app) && !empty($app['scheme']) && !empty($app['host'])) {
+            $port=isset($app['port']) && !(($app['scheme']==='https' && $app['port']===443) || ($app['scheme']==='http' && $app['port']===80)) ? ':'.$app['port'] : '';
+            $allowed[]=$app['scheme'].'://'.$app['host'].$port;
+        }
+        header('Vary: Origin',false);
         if ($origin && in_array($origin,$allowed,true)) {
-            header('Access-Control-Allow-Origin: '.$origin); header('Vary: Origin',false);
+            header('Access-Control-Allow-Origin: '.$origin);
             header('Access-Control-Allow-Methods: GET, POST, OPTIONS'); header('Access-Control-Allow-Headers: Authorization, Content-Type');
         }
         header('Cache-Control: no-store, private'); header('X-Content-Type-Options: nosniff');

@@ -35,7 +35,7 @@ Ces comptes sont créés par le plugin pour l’application. Les comptes déjà 
 
 Chaque nouveau compte reçoit **30 points de bienvenue** à l’inscription, crédités par le serveur une seule fois par compte (montant modifiable dans le barème, 0 pour désactiver). Le bonus apparaît dans l’historique des points et dans le bilan hebdomadaire de la semaine d’inscription.
 
-Cette version corrige aussi l’autorisation d’accès depuis l’application : l’adresse configurée dans **Adresse application** est désormais toujours autorisée, même si la liste des origines est incomplète. Si la création de compte affichait « Impossible de joindre le programme de points », vérifiez quand même que **Origines autorisées** contient l’adresse HTTPS exacte de votre application publiée.
+Cette version corrige aussi l’autorisation d’accès depuis l’application : l’origine de l’adresse configurée dans **Adresse application** est désormais toujours autorisée, même si la liste des origines est incomplète (port conservé lorsqu’il est non standard). Les demandes de contrôle OPTIONS et les réponses d’erreur conservent les autorisations nécessaires. Les autres origines restent refusées. Si la création de compte affichait « Impossible de joindre le programme de points », ajoutez aussi l’adresse HTTPS exacte de l’aperçu Lovable ou du déploiement Vercel dans **Origines autorisées**, si vous testez depuis ces adresses. La mise à jour conserve les réglages existants : elle ne remplace pas votre liste d’origines.
 
 ## Barème initial
 

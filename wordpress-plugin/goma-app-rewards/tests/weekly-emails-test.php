@@ -20,6 +20,8 @@ $period=GWR_Weekly_Emails::period(time()); $uid=$users['verified'];
 foreach([['read',3,$period['start']],['share_app',7,$period['start']],['share_article',6,$period['start']],['listen',30,$period['start']],['gift',-20,$period['start']],['refund',20,$period['start']],['admin',100,$period['start']],['read',3,$period['end']],['read',3,gmdate('Y-m-d H:i:s',strtotime($period['start'].' UTC')-1)]] as $i=>$entry)
     $wpdb->insert(GWR_Store::t('ledger'),['user_id'=>$uid,'kind'=>$entry[0],'points'=>$entry[1],'event_key'=>'weekly-test-'.$i,'created'=>$entry[2]]);
 weekly_check(GWR_Weekly_Emails::earned($uid,$period)===46,'Weekly earned points exactly 3+7+6+30; excludes spending, refunds, manual adjustment and other weeks');
+$wpdb->insert(GWR_Store::t('ledger'),['user_id'=>$uid,'kind'=>'welcome','points'=>30,'event_key'=>'welcome:'.$uid,'created'=>$period['start']]);
+weekly_check(GWR_Weekly_Emails::earned($uid,$period)===76,'Weekly summary includes exactly 30 welcome points');
 update_option('gwr_weekly_enabled',0); GWR_Weekly_Emails::run();
 weekly_check(count($captured)===0,'Global disable prevents all emails');
 update_option('gwr_weekly_enabled',1); GWR_Weekly_Emails::run();
