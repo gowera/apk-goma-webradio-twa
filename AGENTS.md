@@ -14,3 +14,4 @@
 - Use the shared app-store URL for app sharing and the global dismissible review prompt so distribution links stay consistent.
 - Keep rewards accounts, sessions, referrals, ledger, listening validation and gift reservations in the WordPress rewards plugin; the browser calls its REST API directly and stores only its session credential, so no parallel account or points backend is introduced.
 - Dispatch reward summaries through a WordPress cron queue with unique user/week records and signed unsubscribe confirmation; this keeps delivery tracking and preferences on the same WordPress backend.
+- Apply rewards API CORS in WordPress's response-serving filter using exact configured origins plus the app URL origin (including non-default ports), so preflights and errors share the same allowlist without weakening private endpoint authentication.
