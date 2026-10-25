@@ -1,6 +1,7 @@
 <?php
 // Run only on an isolated WordPress: wp eval-file tests/integration.php
 if (!defined('ABSPATH') || !defined('WP_CLI') || !WP_CLI) exit;
+global $wpdb;
 $seq=bin2hex(random_bytes(4)); $token=''; $captured='';
 add_filter('pre_wp_mail',function($result,$args) use(&$captured) { $captured=$args['message']; return true; },10,2);
 function gwr_call($path,$body=null,$token='') {
