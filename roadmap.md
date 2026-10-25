@@ -7,5 +7,7 @@
 - [x] Connect article reading/sharing and live listening rewards; verify the flows and deliver the inspected plugin ZIP.
 
 - [x] Add weekly WordPress reward summary emails, unsubscribe, tests and updated installable ZIP.
+- [x] Finish signup CORS correction and verify the 30-point welcome bonus in isolated WordPress and the browser.
+- [x] Deliver the inspected version 1.2.0 plugin ZIP; production installation and email delivery require the site owner.
 
 Launch prerequisite: the site owner must install/activate the ZIP on gomawebradio.com, verify real email delivery, configure gifts and referral bonus, and publish the app changes; production and Android background listening remain unverified.

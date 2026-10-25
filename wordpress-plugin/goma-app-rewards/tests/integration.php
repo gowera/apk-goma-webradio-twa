@@ -1,6 +1,7 @@
 <?php
 // Run only on an isolated WordPress: wp eval-file tests/integration.php
 if (!defined('ABSPATH') || !defined('WP_CLI') || !WP_CLI) exit;
+global $wpdb;
 $seq=bin2hex(random_bytes(4)); $token=''; $captured='';
 add_filter('pre_wp_mail',function($result,$args) use(&$captured) { $captured=$args['message']; return true; },10,2);
 function gwr_call($path,$body=null,$token='') {
@@ -14,6 +15,9 @@ $email='integration-'.$seq.'@example.test'; $password='isolated-test-password';
 $r=gwr_call('signup',['email'=>$email,'name'=>'Test Listener','password'=>$password,'consent'=>true]);
 gwr_check($r->get_status()===200,'Signup creates WordPress listener');
 $uid=email_exists($email);
+gwr_check((int)$wpdb->get_var($wpdb->prepare('SELECT balance FROM '.GWR_Store::t('accounts').' WHERE user_id=%d',$uid))===30,'Welcome balance is 30 before email verification');
+gwr_call('signup',['email'=>$email,'name'=>'Test Listener','password'=>$password,'consent'=>true]);
+gwr_check((int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.GWR_Store::t('ledger').' WHERE user_id=%d AND kind=%s',$uid,'welcome'))===1,'Repeated signup credits welcome only once');
 gwr_check(in_array('gwr_listener',get_userdata($uid)->roles,true),'No WordPress admin permissions');
 gwr_check(gwr_call('login',['email'=>$email,'password'=>$password])->get_status()===403,'Unverified account cannot sign in');
 preg_match('/token=([a-f0-9]+)/',$captured,$m);
