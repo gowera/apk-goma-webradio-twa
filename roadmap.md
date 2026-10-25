@@ -11,3 +11,7 @@
 - [x] Deliver the inspected version 1.2.0 plugin ZIP; production installation and email delivery require the site owner.
 
 Launch prerequisite: the site owner must install/activate the ZIP on gomawebradio.com, verify real email delivery, configure gifts and referral bonus, and publish the app changes; production and Android background listening remain unverified.
+
+- [ ] Reorganize rewards as an audience profile with grouped information.
+- [ ] Display active article reading time, pause on inactivity/sleep and test scroll-based counting.
+- [ ] Verify profile and reading interactions in the browser.
