@@ -16,3 +16,6 @@ Launch prerequisite: the site owner must install/activate the ZIP on gomawebradi
 - [x] Display active article reading time, pause on inactivity/sleep and test scroll-based counting.
 - [x] Verify real-article reading interactions and profile tabs on desktop/mobile with isolated display fixtures.
 - [ ] Verify authenticated reading credits and profile changes against the live WordPress plugin; requires a signed-in WordPress app account and preview origin authorization.
+- [ ] Add a dismissible rewards invitation after signed-out article reading.
+- [ ] Add WordPress publication newsletter with featured image, excerpt, app link, unsubscribe and delivery queue tests.
+- [ ] Verify the invitation and deliver the inspected updated plugin ZIP.
