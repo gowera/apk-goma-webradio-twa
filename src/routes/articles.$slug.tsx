@@ -82,7 +82,6 @@ function ArticlePage() {
   return (
     <Screen title="Article" back>
       <article className="pt-4">
-        <ArticleRewards postId={article.id} />
         <div className="overflow-hidden rounded-2xl bg-panel2 shadow-soft">
           <SmartImage src={article.image} alt={article.title} className="max-h-[70vh] w-full object-contain" fallbackClassName="h-56 w-full bg-brand-deep object-contain p-10" />
         </div>
@@ -113,7 +112,8 @@ function ArticlePage() {
           </button>
         </div>
 
-        <div className="gw-article-content mt-5 text-ink/90" dangerouslySetInnerHTML={{ __html: article.content }} />
+        <ArticleRewards key={article.id} postId={article.id} />
+        <div data-reading-content className="gw-article-content mt-5 text-ink/90" dangerouslySetInnerHTML={{ __html: article.content }} />
         <ArticleComments postId={article.id} articleUrl={article.link} />
       </article>
     </Screen>
