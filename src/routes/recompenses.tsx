@@ -47,7 +47,7 @@ function Rewards() {
       <section className="-mx-4 border-b border-line bg-panel pb-5">
         <div className="relative h-40 overflow-hidden bg-brand-deep sm:h-48">
           <img src="/play-bg.webp" alt="" className="h-full w-full object-cover opacity-60" />
-          <div className="absolute inset-x-4 bottom-5 flex items-center gap-3 text-primary-foreground"><img src="/logo.png" alt="GOMA WEBRADIO" className="h-10 w-10 object-contain" /><div><p className="font-display text-lg font-extrabold">Le club des auditeurs</p><p className="text-xs">Fasi ya ndule na infos za palais</p></div></div>
+          <div className="absolute inset-x-4 top-5 flex items-center gap-3 text-primary-foreground"><img src="/logo.png" alt="GOMA WEBRADIO" className="h-10 w-10 object-contain" /><div><p className="font-display text-lg font-extrabold">Le club des auditeurs</p><p className="text-xs">Fasi ya ndule na infos za palais</p></div></div>
         </div>
         <div className="relative px-4">
           <div className="-mt-7 flex items-end justify-between gap-3"><span aria-hidden="true" className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 border-panel bg-panel2 font-display text-3xl font-extrabold text-brand">{user.name.trim().slice(0,1).toUpperCase()}</span><Button variant="outline" size="icon" title="Actualiser mes points" aria-label="Actualiser mes points" onClick={() => void refresh()} disabled={loading}><span className="material-symbols-outlined">refresh</span></Button></div>

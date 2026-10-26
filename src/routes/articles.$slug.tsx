@@ -35,7 +35,8 @@ export const Route = createFileRoute("/articles/$slug")({
 
 function ArticlePage() {
   const { slug } = Route.useParams();
-  const articleQ = useQuery(articleQuery(slug));
+  const initialArticle = Route.useLoaderData();
+  const articleQ = useQuery({ ...articleQuery(slug), initialData: initialArticle ?? undefined });
   const article = articleQ.data;
   const { toggle, isFavorite } = useFavorites();
 

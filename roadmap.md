@@ -12,6 +12,7 @@
 
 Launch prerequisite: the site owner must install/activate the ZIP on gomawebradio.com, verify real email delivery, configure gifts and referral bonus, and publish the app changes; production and Android background listening remain unverified.
 
-- [ ] Reorganize rewards as an audience profile with grouped information.
-- [ ] Display active article reading time, pause on inactivity/sleep and test scroll-based counting.
-- [ ] Verify profile and reading interactions in the browser.
+- [x] Reorganize rewards as an audience profile with grouped information.
+- [x] Display active article reading time, pause on inactivity/sleep and test scroll-based counting.
+- [x] Verify real-article reading interactions and profile tabs on desktop/mobile with isolated display fixtures.
+- [ ] Verify authenticated reading credits and profile changes against the live WordPress plugin; requires a signed-in WordPress app account and preview origin authorization.

@@ -31,3 +31,11 @@ test('a suspended timer never counts sleep even if visibility is unchanged', () 
   reading.tick(1000);
   expect(reading.tick(60000)).toEqual({ seconds: 1, active: false });
 });
+test('30 seconds of scrolling records 30 seconds of active reading', () => {
+  const reading = new ArticleReading(0);
+  for (let t = 0; t < 30000; t += 1000) {
+    reading.scroll(t);
+    reading.tick(t + 1000);
+  }
+  expect(reading.tick(30000).seconds).toBe(30);
+});
