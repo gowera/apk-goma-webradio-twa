@@ -1,0 +1,12 @@
+import { rewardsRequest } from '@/lib/rewards-api';
+export type Relation = 'none' | 'friend' | 'incoming' | 'outgoing';
+export type Person = { id: number; name: string; relation: Relation; unread?: number; last?: { body: string; created: string } | null };
+export type FriendLists = { friends: Person[]; incoming: Person[]; outgoing: Person[] };
+export type ChatMessage = { id: number; mine: boolean; body: string; created: string };
+export const searchListeners = (q: string) => rewardsRequest<Person[]>(`social/search?q=${encodeURIComponent(q)}`);
+export const friendLists = () => rewardsRequest<FriendLists>('social/friends');
+export const requestFriend = (user_id: number) => rewardsRequest<{ relation: Relation }>('social/request', { user_id });
+export const respondFriend = (user_id: number, accept: boolean) => rewardsRequest<{ relation: Relation }>('social/respond', { user_id, accept });
+export const removeFriend = (user_id: number) => rewardsRequest<{ relation: Relation }>('social/remove', { user_id });
+export const conversation = (user_id: number, after = 0) => rewardsRequest<{ friend: Person; messages: ChatMessage[] }>(`social/messages?user_id=${user_id}&after=${after}`);
+export const sendMessage = (user_id: number, body: string) => rewardsRequest<ChatMessage>('social/send', { user_id, body });
