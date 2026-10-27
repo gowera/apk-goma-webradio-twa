@@ -26,6 +26,8 @@ import { Route as RecompensesRouteImport } from './routes/recompenses'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as VerificationRouteImport } from './routes/verification'
 import { Route as VideosRouteImport } from './routes/videos'
+import { Route as AmisIndexRouteImport } from './routes/amis.index'
+import { Route as AmisIdRouteImport } from './routes/amis.$id'
 import { Route as ArticlesIndexRouteImport } from './routes/articles.index'
 import { Route as ArticlesSlugRouteImport } from './routes/articles.$slug'
 import { Route as CategoriesSlugRouteImport } from './routes/categories.$slug'
@@ -120,6 +122,16 @@ const VideosRoute = VideosRouteImport.update({
   path: '/videos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AmisIndexRoute = AmisIndexRouteImport.update({
+  id: '/amis/',
+  path: '/amis/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AmisIdRoute = AmisIdRouteImport.update({
+  id: '/amis/$id',
+  path: '/amis/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ArticlesIndexRoute = ArticlesIndexRouteImport.update({
   id: '/articles/',
   path: '/articles/',
@@ -179,10 +191,12 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/verification': typeof VerificationRoute
   '/videos': typeof VideosRoute
+  '/amis/$id': typeof AmisIdRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/news/$slug': typeof NewsSlugRoute
   '/podcasts/$id': typeof PodcastsIdRoute
+  '/amis/': typeof AmisIndexRoute
   '/articles/': typeof ArticlesIndexRoute
   '/podcasts/': typeof PodcastsIndexRoute
   '/api/public/notify': typeof ApiPublicNotifyRoute
@@ -206,10 +220,12 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/verification': typeof VerificationRoute
   '/videos': typeof VideosRoute
+  '/amis/$id': typeof AmisIdRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/news/$slug': typeof NewsSlugRoute
   '/podcasts/$id': typeof PodcastsIdRoute
+  '/amis': typeof AmisIndexRoute
   '/articles': typeof ArticlesIndexRoute
   '/podcasts': typeof PodcastsIndexRoute
   '/api/public/notify': typeof ApiPublicNotifyRoute
@@ -234,10 +250,12 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/verification': typeof VerificationRoute
   '/videos': typeof VideosRoute
+  '/amis/$id': typeof AmisIdRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/news/$slug': typeof NewsSlugRoute
   '/podcasts/$id': typeof PodcastsIdRoute
+  '/amis/': typeof AmisIndexRoute
   '/articles/': typeof ArticlesIndexRoute
   '/podcasts/': typeof PodcastsIndexRoute
   '/api/public/notify': typeof ApiPublicNotifyRoute
@@ -263,10 +281,12 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/verification'
     | '/videos'
+    | '/amis/$id'
     | '/articles/$slug'
     | '/categories/$slug'
     | '/news/$slug'
     | '/podcasts/$id'
+    | '/amis/'
     | '/articles/'
     | '/podcasts/'
     | '/api/public/notify'
@@ -290,10 +310,12 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/verification'
     | '/videos'
+    | '/amis/$id'
     | '/articles/$slug'
     | '/categories/$slug'
     | '/news/$slug'
     | '/podcasts/$id'
+    | '/amis'
     | '/articles'
     | '/podcasts'
     | '/api/public/notify'
@@ -317,10 +339,12 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/verification'
     | '/videos'
+    | '/amis/$id'
     | '/articles/$slug'
     | '/categories/$slug'
     | '/news/$slug'
     | '/podcasts/$id'
+    | '/amis/'
     | '/articles/'
     | '/podcasts/'
     | '/api/public/notify'
@@ -345,10 +369,12 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   VerificationRoute: typeof VerificationRoute
   VideosRoute: typeof VideosRoute
+  AmisIdRoute: typeof AmisIdRoute
   ArticlesSlugRoute: typeof ArticlesSlugRoute
   CategoriesSlugRoute: typeof CategoriesSlugRoute
   NewsSlugRoute: typeof NewsSlugRoute
   PodcastsIdRoute: typeof PodcastsIdRoute
+  AmisIndexRoute: typeof AmisIndexRoute
   ArticlesIndexRoute: typeof ArticlesIndexRoute
   PodcastsIndexRoute: typeof PodcastsIndexRoute
   ApiPublicNotifyRoute: typeof ApiPublicNotifyRoute
@@ -476,6 +502,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VideosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/amis/': {
+      id: '/amis/'
+      path: '/amis'
+      fullPath: '/amis/'
+      preLoaderRoute: typeof AmisIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/amis/$id': {
+      id: '/amis/$id'
+      path: '/amis/$id'
+      fullPath: '/amis/$id'
+      preLoaderRoute: typeof AmisIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/articles/': {
       id: '/articles/'
       path: '/articles'
@@ -553,10 +593,12 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   VerificationRoute: VerificationRoute,
   VideosRoute: VideosRoute,
+  AmisIdRoute: AmisIdRoute,
   ArticlesSlugRoute: ArticlesSlugRoute,
   CategoriesSlugRoute: CategoriesSlugRoute,
   NewsSlugRoute: NewsSlugRoute,
   PodcastsIdRoute: PodcastsIdRoute,
+  AmisIndexRoute: AmisIndexRoute,
   ArticlesIndexRoute: ArticlesIndexRoute,
   PodcastsIndexRoute: PodcastsIndexRoute,
   ApiPublicNotifyRoute: ApiPublicNotifyRoute,
