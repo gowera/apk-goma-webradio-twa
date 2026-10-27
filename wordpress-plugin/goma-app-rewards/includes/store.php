@@ -14,7 +14,8 @@ final class GWR_Store {
           'reads'=>"user_id bigint unsigned NOT NULL, post_id bigint unsigned NOT NULL, token varchar(64) NOT NULL, started bigint NOT NULL, PRIMARY KEY  (user_id,post_id)",
           'gifts'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, title varchar(120) NOT NULL, cost int NOT NULL DEFAULT 0, stock int NOT NULL DEFAULT 0, active tinyint NOT NULL DEFAULT 0, PRIMARY KEY  (id)",
           'claims'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, user_id bigint unsigned NOT NULL, gift_id bigint unsigned NOT NULL, cost int NOT NULL, status varchar(20) NOT NULL DEFAULT 'pending', request_key varchar(64) NOT NULL, created datetime NOT NULL, PRIMARY KEY  (id), UNIQUE KEY request (user_id,request_key)",
-          'emails'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, user_id bigint unsigned NOT NULL, period_key varchar(10) NOT NULL, period_start datetime NOT NULL, period_end datetime NOT NULL, status varchar(20) NOT NULL, attempts int NOT NULL DEFAULT 0, next_attempt bigint NOT NULL DEFAULT 0, PRIMARY KEY  (id), UNIQUE KEY recipient_period (user_id,period_key), KEY dispatch (status,next_attempt)"
+          'emails'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, user_id bigint unsigned NOT NULL, period_key varchar(10) NOT NULL, period_start datetime NOT NULL, period_end datetime NOT NULL, status varchar(20) NOT NULL, attempts int NOT NULL DEFAULT 0, next_attempt bigint NOT NULL DEFAULT 0, PRIMARY KEY  (id), UNIQUE KEY recipient_period (user_id,period_key), KEY dispatch (status,next_attempt)",
+          'newsletter'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, post_id bigint unsigned NOT NULL, user_id bigint unsigned NOT NULL, status varchar(20) NOT NULL, attempts int NOT NULL DEFAULT 0, next_attempt bigint NOT NULL DEFAULT 0, created datetime NOT NULL, PRIMARY KEY  (id), UNIQUE KEY post_user (post_id,user_id), KEY dispatch (status,next_attempt)"
         ];
         // dbDelta requires one column/index definition per line during upgrades.
         foreach($schemas as $name=>$s) dbDelta('CREATE TABLE '.self::t($name)." (\n".str_replace(', ',",\n",$s)."\n) ENGINE=InnoDB $c;");
@@ -60,7 +61,7 @@ final class GWR_Store {
     }
     public static function delete_user($uid) {
         global $wpdb;
-        foreach(['accounts','sessions','ledger','listens','reads','claims','emails'] as $t) $wpdb->delete(self::t($t),['user_id'=>$uid]);
+        foreach(['accounts','sessions','ledger','listens','reads','claims','emails','newsletter'] as $t) $wpdb->delete(self::t($t),['user_id'=>$uid]);
         $wpdb->update(self::t('accounts'),['referrer'=>0],['referrer'=>$uid]);
     }
 }

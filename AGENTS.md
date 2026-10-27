@@ -16,3 +16,4 @@
 - Dispatch reward summaries through a WordPress cron queue with unique user/week records and signed unsubscribe confirmation; this keeps delivery tracking and preferences on the same WordPress backend.
 - Apply rewards API CORS in WordPress's response-serving filter using exact configured origins plus the app URL origin (including non-default ports), so preflights and errors share the same allowlist without weakening private endpoint authentication.
 - Keep article activity timing in the browser-safe ArticleReading controller; only scroll activity with visible article content advances time, and visibility loss or suspended timers cancels activity to avoid counting sleep.
+- WordPress publication newsletters use a per post/user queue table processed by a 5-minute cron with signed, confirmed unsubscribe, so each subscriber gets each article at most once.
