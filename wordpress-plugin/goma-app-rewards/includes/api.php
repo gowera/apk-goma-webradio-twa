@@ -2,6 +2,7 @@
 if (!defined('ABSPATH')) exit;
 final class GWR_API {
     private static $uid=0;
+    public static function uid() { return self::$uid; }
     public static function routes() {
         $public=['config'=>'GET','signup'=>'POST','login'=>'POST','forgot'=>'POST','reset'=>'POST','verify'=>'POST'];
         $private=['me'=>'GET','logout'=>'POST','profile'=>'POST','event'=>'POST','read'=>'POST','listen'=>'POST','gifts'=>'GET','claim'=>'POST','leaderboard'=>'GET'];
