@@ -76,6 +76,7 @@ final class GWR_Store {
         foreach(['accounts','sessions','ledger','listens','reads','claims','emails','newsletter'] as $t) $wpdb->delete(self::t($t),['user_id'=>$uid]);
         foreach(['user_a','user_b'] as $c) $wpdb->delete(self::t('friends'),[$c=>$uid]);
         foreach(['sender','recipient'] as $c) $wpdb->delete(self::t('messages'),[$c=>$uid]);
+        $wpdb->delete(self::t('club_likes'),['user_id'=>$uid]); $wpdb->delete(self::t('club_posts'),['user_id'=>$uid]);
         $wpdb->update(self::t('accounts'),['referrer'=>0],['referrer'=>$uid]);
     }
 }

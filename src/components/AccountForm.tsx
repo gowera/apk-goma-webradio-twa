@@ -26,8 +26,8 @@ export function AccountForm({ mode }: { mode: Mode }) {
     const query = new URLSearchParams(window.location.search);
     setEmail(query.get('email') ?? '');
     setToken(query.get('token') ?? '');
-    setReferral(query.get('ref') ?? window.sessionStorage.getItem('gwr-referral') ?? '');
-    if (query.get('ref')) window.sessionStorage.setItem('gwr-referral', query.get('ref') ?? '');
+    setReferral(query.get('ref') ?? window.localStorage.getItem('gwr-referral') ?? '');
+    if (query.get('ref')) window.localStorage.setItem('gwr-referral', query.get('ref') ?? '');
   }, []);
   const submit = async (event: FormEvent) => {
     event.preventDefault(); setError(''); setMessage('');
@@ -41,7 +41,7 @@ export function AccountForm({ mode }: { mode: Mode }) {
         const path = mode === 'signup' ? 'signup' : mode === 'forgot' ? 'forgot' : mode === 'reset' ? 'reset' : 'verify';
         const result = await rewardsRequest<{ message: string }>(path, { email, name, password, referral, consent, token });
         setMessage(result.message); setPassword(''); setConfirm('');
-        if (mode === 'signup') window.sessionStorage.removeItem('gwr-referral');
+        if (mode === 'signup') window.localStorage.removeItem('gwr-referral');
         if (mode === 'verify' || mode === 'reset') window.history.replaceState(null, '', window.location.pathname);
       }
     } catch (e) { setError(e instanceof Error ? e.message : 'Opération impossible.'); }
@@ -56,7 +56,7 @@ export function AccountForm({ mode }: { mode: Mode }) {
         <Field label="Adresse email"><Input type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required maxLength={254} /></Field>
         {['login','signup','reset'].includes(mode) && <Field label="Mot de passe"><Input aria-label="Mot de passe" type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required minLength={mode === 'login' ? 1 : 10} maxLength={200} />{mode !== 'login' && <span className="text-xs text-inkmute">10 caractères minimum</span>}</Field>}
         {['signup','reset'].includes(mode) && <Field label="Confirmer le mot de passe"><Input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} autoComplete="new-password" required minLength={10} maxLength={200} /></Field>}
-        {mode === 'signup' && <><Field label="Code de parrainage (facultatif)"><Input value={referral} onChange={e => setReferral(e.target.value)} maxLength={32} /></Field><label className="flex items-start gap-3 text-sm text-inkmute"><input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} required className="mt-1 accent-brand" /><span>J’accepte les <Link to="/conditions" className="text-brand underline">conditions d’utilisation</Link> et la <a href="https://gomawebradio.com/politique-de-confidentialite" className="text-brand underline" target="_blank" rel="noreferrer">politique de confidentialité</a>.</span></label></>}
+        {mode === 'signup' && <><Field label="Code de parrainage (facultatif)"><Input value={referral} onChange={e => setReferral(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,''))} maxLength={4} /></Field><label className="flex items-start gap-3 text-sm text-inkmute"><input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} required className="mt-1 accent-brand" /><span>J’accepte les <Link to="/conditions" className="text-brand underline">conditions d’utilisation</Link> et la <a href="https://gomawebradio.com/politique-de-confidentialite" className="text-brand underline" target="_blank" rel="noreferrer">politique de confidentialité</a>.</span></label></>}
         {(mode === 'verify' || mode === 'reset') && !token && <p className="text-sm text-inkmute">Ouvrez le lien reçu par email pour continuer.</p>}
         {error && <p role="alert" className="text-sm text-blood">{error}</p>}
         {message && <p role="status" className="rounded-lg border border-line bg-panel2 p-4 text-sm text-ink">{message}</p>}
