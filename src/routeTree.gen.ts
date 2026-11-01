@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AproposRouteImport } from './routes/apropos'
+import { Route as ClubRouteImport } from './routes/club'
 import { Route as ConditionsRouteImport } from './routes/conditions'
 import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as FavorisRouteImport } from './routes/favoris'
@@ -45,6 +46,11 @@ const IndexRoute = IndexRouteImport.update({
 const AproposRoute = AproposRouteImport.update({
   id: '/apropos',
   path: '/apropos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClubRoute = ClubRouteImport.update({
+  id: '/club',
+  path: '/club',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConditionsRoute = ConditionsRouteImport.update({
@@ -176,6 +182,7 @@ const PodcastsSerieSlugRoute = PodcastsSerieSlugRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/apropos': typeof AproposRoute
+  '/club': typeof ClubRoute
   '/conditions': typeof ConditionsRoute
   '/connexion': typeof ConnexionRoute
   '/favoris': typeof FavorisRoute
@@ -205,6 +212,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/apropos': typeof AproposRoute
+  '/club': typeof ClubRoute
   '/conditions': typeof ConditionsRoute
   '/connexion': typeof ConnexionRoute
   '/favoris': typeof FavorisRoute
@@ -235,6 +243,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/apropos': typeof AproposRoute
+  '/club': typeof ClubRoute
   '/conditions': typeof ConditionsRoute
   '/connexion': typeof ConnexionRoute
   '/favoris': typeof FavorisRoute
@@ -266,6 +275,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/apropos'
+    | '/club'
     | '/conditions'
     | '/connexion'
     | '/favoris'
@@ -295,6 +305,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/apropos'
+    | '/club'
     | '/conditions'
     | '/connexion'
     | '/favoris'
@@ -324,6 +335,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/apropos'
+    | '/club'
     | '/conditions'
     | '/connexion'
     | '/favoris'
@@ -354,6 +366,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AproposRoute: typeof AproposRoute
+  ClubRoute: typeof ClubRoute
   ConditionsRoute: typeof ConditionsRoute
   ConnexionRoute: typeof ConnexionRoute
   FavorisRoute: typeof FavorisRoute
@@ -395,6 +408,13 @@ declare module '@tanstack/react-router' {
       path: '/apropos'
       fullPath: '/apropos'
       preLoaderRoute: typeof AproposRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/club': {
+      id: '/club'
+      path: '/club'
+      fullPath: '/club'
+      preLoaderRoute: typeof ClubRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/conditions': {
@@ -578,6 +598,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AproposRoute: AproposRoute,
+  ClubRoute: ClubRoute,
   ConditionsRoute: ConditionsRoute,
   ConnexionRoute: ConnexionRoute,
   FavorisRoute: FavorisRoute,
