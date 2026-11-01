@@ -17,7 +17,9 @@ final class GWR_Store {
           'emails'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, user_id bigint unsigned NOT NULL, period_key varchar(10) NOT NULL, period_start datetime NOT NULL, period_end datetime NOT NULL, status varchar(20) NOT NULL, attempts int NOT NULL DEFAULT 0, next_attempt bigint NOT NULL DEFAULT 0, PRIMARY KEY  (id), UNIQUE KEY recipient_period (user_id,period_key), KEY dispatch (status,next_attempt)",
           'newsletter'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, post_id bigint unsigned NOT NULL, user_id bigint unsigned NOT NULL, status varchar(20) NOT NULL, attempts int NOT NULL DEFAULT 0, next_attempt bigint NOT NULL DEFAULT 0, created datetime NOT NULL, PRIMARY KEY  (id), UNIQUE KEY post_user (post_id,user_id), KEY dispatch (status,next_attempt)",
           'friends'=>"user_a bigint unsigned NOT NULL, user_b bigint unsigned NOT NULL, requester bigint unsigned NOT NULL, status varchar(20) NOT NULL, created datetime NOT NULL, PRIMARY KEY  (user_a,user_b), KEY user_b (user_b)",
-          'messages'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, sender bigint unsigned NOT NULL, recipient bigint unsigned NOT NULL, body text NOT NULL, created datetime NOT NULL, read_at datetime NULL, PRIMARY KEY  (id), KEY conversation (sender,recipient,id), KEY inbox (recipient,read_at)"
+          'messages'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, sender bigint unsigned NOT NULL, recipient bigint unsigned NOT NULL, body text NOT NULL, created datetime NOT NULL, read_at datetime NULL, PRIMARY KEY  (id), KEY conversation (sender,recipient,id), KEY inbox (recipient,read_at)",
+          'club_posts'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, user_id bigint unsigned NOT NULL, body text NOT NULL, created datetime NOT NULL, PRIMARY KEY  (id), KEY user_id (user_id)",
+          'club_likes'=>"post_id bigint unsigned NOT NULL, user_id bigint unsigned NOT NULL, PRIMARY KEY  (post_id,user_id)"
         ];
         // dbDelta requires one column/index definition per line during upgrades.
         foreach($schemas as $name=>$s) dbDelta('CREATE TABLE '.self::t($name)." (\n".str_replace(', ',",\n",$s)."\n) ENGINE=InnoDB $c;");
@@ -27,8 +29,16 @@ final class GWR_Store {
             $wpdb->insert(self::t('gifts'), ['title'=>'T-shirt GOMA WEBRADIO','cost'=>0,'stock'=>0,'active'=>0]);
             $wpdb->insert(self::t('gifts'), ['title'=>'Chapeau GOMA WEBRADIO','cost'=>0,'stock'=>0,'active'=>0]);
         }
+        // Referral codes are short (4 characters); older long codes are replaced once on upgrade.
+        foreach($wpdb->get_col('SELECT user_id FROM '.self::t('accounts').' WHERE CHAR_LENGTH(code)<>4') as $uid) $wpdb->update(self::t('accounts'),['code'=>self::new_code()],['user_id'=>(int)$uid]);
         update_option('gwr_version', GWR_VERSION);
         if (!wp_next_scheduled('gwr_cleanup')) wp_schedule_event(time()+3600,'daily','gwr_cleanup');
+    }
+    public static function new_code() {
+        global $wpdb; $alphabet='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+        do { $code=''; for($i=0;$i<4;$i++) $code.=$alphabet[random_int(0,strlen($alphabet)-1)]; }
+        while ($wpdb->get_var($wpdb->prepare('SELECT user_id FROM '.self::t('accounts').' WHERE code=%s',$code)));
+        return $code;
     }
     public static function settings() { $s=get_option('gwr_settings',[]); $s['rules']=array_merge(GWR_Rules::defaults(),$s['rules']??[]); return $s; }
     public static function atomic($uid, $fn) {
@@ -66,6 +76,7 @@ final class GWR_Store {
         foreach(['accounts','sessions','ledger','listens','reads','claims','emails','newsletter'] as $t) $wpdb->delete(self::t($t),['user_id'=>$uid]);
         foreach(['user_a','user_b'] as $c) $wpdb->delete(self::t('friends'),[$c=>$uid]);
         foreach(['sender','recipient'] as $c) $wpdb->delete(self::t('messages'),[$c=>$uid]);
+        $wpdb->delete(self::t('club_likes'),['user_id'=>$uid]); $wpdb->delete(self::t('club_posts'),['user_id'=>$uid]);
         $wpdb->update(self::t('accounts'),['referrer'=>0],['referrer'=>$uid]);
     }
 }

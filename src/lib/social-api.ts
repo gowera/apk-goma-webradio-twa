@@ -2,7 +2,7 @@ import { rewardsRequest } from '@/lib/rewards-api';
 export type Relation = 'none' | 'friend' | 'incoming' | 'outgoing';
 export type Person = { id: number; name: string; relation: Relation; unread?: number; last?: { body: string; created: string } | null };
 export type FriendLists = { friends: Person[]; incoming: Person[]; outgoing: Person[] };
-export type ChatMessage = { id: number; mine: boolean; body: string; created: string };
+export type ChatMessage = { id: number; mine: boolean; body: string; created: string; seen?: boolean };
 export const searchListeners = (q: string) => rewardsRequest<Person[]>(`social/search?q=${encodeURIComponent(q)}`);
 export const friendLists = () => rewardsRequest<FriendLists>('social/friends');
 export const requestFriend = (user_id: number) => rewardsRequest<{ relation: Relation }>('social/request', { user_id });
@@ -10,3 +10,12 @@ export const respondFriend = (user_id: number, accept: boolean) => rewardsReques
 export const removeFriend = (user_id: number) => rewardsRequest<{ relation: Relation }>('social/remove', { user_id });
 export const conversation = (user_id: number, after = 0) => rewardsRequest<{ friend: Person; messages: ChatMessage[] }>(`social/messages?user_id=${user_id}&after=${after}`);
 export const sendMessage = (user_id: number, body: string) => rewardsRequest<ChatMessage>('social/send', { user_id, body });
+export type ClubPost = { id: number; author: Person; mine: boolean; body: string; created: string; likes: number; liked: boolean };
+export type Club = { members: number; posts: ClubPost[]; top: (Person & { points: number })[]; newest: Person[] };
+export const clubFeed = (before = 0) => rewardsRequest<Club>(`social/club?before=${before}`);
+export const clubPost = (body: string) => rewardsRequest<ClubPost>('social/post', { body });
+export const clubLike = (post_id: number) => rewardsRequest<{ likes: number; liked: boolean }>('social/like', { post_id });
+export const clubUnpost = (post_id: number) => rewardsRequest<{ deleted: boolean }>('social/unpost', { post_id });
+/** Server datetimes are UTC "YYYY-MM-DD HH:MM:SS". */
+export const utcDate = (s: string) => new Date(s.replace(' ', 'T') + 'Z');
+export const timeAgo = (s: string) => { const m = Math.max(0, Math.round((Date.now() - utcDate(s).getTime()) / 60000)); return m < 1 ? 'à l’instant' : m < 60 ? `il y a ${m} min` : m < 1440 ? `il y a ${Math.round(m / 60)} h` : utcDate(s).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }); };

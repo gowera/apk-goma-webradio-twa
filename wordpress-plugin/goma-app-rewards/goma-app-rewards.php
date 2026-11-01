@@ -10,7 +10,7 @@
  * Text Domain: goma-app-rewards
  */
 if (!defined('ABSPATH')) exit;
-define('GWR_VERSION', '1.5.0');
+define('GWR_VERSION', '1.6.0');
 require_once __DIR__.'/includes/rules.php';
 require_once __DIR__.'/includes/store.php';
 require_once __DIR__.'/includes/api.php';

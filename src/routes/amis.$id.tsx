@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Screen } from '@/components/Screen';
 import { Button } from '@/components/ui/button';
 import { useRewards } from '@/context/rewards-context';
-import { conversation, removeFriend, sendMessage, type ChatMessage } from '@/lib/social-api';
+import { conversation, removeFriend, sendMessage, utcDate, type ChatMessage } from '@/lib/social-api';
 
 export const Route = createFileRoute('/amis/$id')({
   head: () => ({ meta: [
@@ -28,12 +28,12 @@ function ChatPage() {
   const [busy, setBusy] = useState(false);
   const lastId = useRef(0);
   const end = useRef<HTMLDivElement>(null);
-  const merge = (items: ChatMessage[]) => { if (!items.length) return; lastId.current = Math.max(lastId.current, ...items.map(m => m.id)); setMessages(prev => { const seen = new Set(prev.map(m => m.id)); return [...prev, ...items.filter(m => !seen.has(m.id))]; }); };
+  const merge = (items: ChatMessage[]) => { if (!items.length) return; lastId.current = Math.max(lastId.current, ...items.map(m => m.id)); setMessages(prev => { const seen = new Set(prev.map(m => m.id)); const fresh = new Map(items.map(m => [m.id, m])); return [...prev.map(m => fresh.get(m.id) ?? m), ...items.filter(m => !seen.has(m.id))]; }); };
   useEffect(() => {
     if (!user) return;
     lastId.current = 0; setMessages([]);
     let stop = false;
-    const poll = () => conversation(id, lastId.current).then(r => { if (stop) return; setName(r.friend.name); merge(r.messages); setError(''); }).catch(e => { if (!stop) setError(e instanceof Error ? e.message : 'Discussion indisponible.'); });
+    const poll = () => conversation(id, Math.max(0, lastId.current - 30)).then(r => { if (stop) return; setName(r.friend.name); merge(r.messages); setError(''); }).catch(e => { if (!stop) setError(e instanceof Error ? e.message : 'Discussion indisponible.'); });
     void poll();
     const t = window.setInterval(() => { if (document.visibilityState === 'visible') void poll(); }, 5000);
     return () => { stop = true; window.clearInterval(t); };
@@ -47,10 +47,14 @@ function ChatPage() {
   if (!user) return <Screen title="Discussion" back><p className="py-10 text-center text-sm text-inkmute">Connectez-vous pour discuter. <Link to="/connexion" className="font-bold text-brand">Se connecter</Link></p></Screen>;
   return <Screen title={name} back>
     <div className="flex min-h-[60vh] flex-col pt-4">
-      <div className="mb-3 flex justify-end"><Button variant="ghost" size="sm" onClick={async () => { if (window.confirm(`Retirer ${name} de vos amis ?`)) { await removeFriend(id).catch(() => null); window.history.back(); } }}>Retirer des amis</Button></div>
-      <ol className="flex flex-1 flex-col gap-2" aria-live="polite">
+      <div className="mb-3 flex items-center gap-3 border-b border-line pb-3"><span aria-hidden="true" className="flex h-11 w-11 items-center justify-center rounded-full bg-panel2 font-display text-lg font-extrabold text-brand">{name.trim().slice(0, 1).toUpperCase()}</span><span className="min-w-0 flex-1"><span className="block truncate font-bold text-ink">{name}</span><span className="block text-xs text-inkmute">Ami du club des auditeurs</span></span><Button variant="ghost" size="sm" onClick={async () => { if (window.confirm(`Retirer ${name} de vos amis ?`)) { await removeFriend(id).catch(() => null); window.history.back(); } }}>Retirer des amis</Button></div>
+      <ol className="flex flex-1 flex-col gap-1" aria-live="polite">
         {messages.length === 0 && !error && <li className="py-8 text-center text-sm text-inkmute">Aucun message. Écrivez le premier !</li>}
-        {messages.map(m => <li key={m.id} className={`max-w-[80%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2 text-sm ${m.mine ? 'self-end bg-brand text-primary-foreground' : 'self-start bg-panel2 text-ink'}`}>{m.body}</li>)}
+        {messages.map((m, i) => { const d = utcDate(m.created); const day = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }); const prevDay = i ? utcDate(messages[i - 1].created).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : ''; const last = i === messages.length - 1 || messages[i + 1].mine !== m.mine; return <li key={m.id} className={`flex flex-col ${m.mine ? 'items-end' : 'items-start'}`}>
+          {day !== prevDay && <span className="my-3 self-center rounded-full bg-panel2 px-3 py-1 text-xs capitalize text-inkmute">{day}</span>}
+          <span className={`max-w-[80%] whitespace-pre-wrap break-words px-4 py-2 text-sm ${m.mine ? 'rounded-2xl rounded-br-md bg-brand text-primary-foreground' : 'rounded-2xl rounded-bl-md bg-panel2 text-ink'}`}>{m.body}</span>
+          {last && <span className="mt-1 flex items-center gap-1 px-1 text-[11px] text-inkmute">{d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}{m.mine && <span className="material-symbols-outlined text-sm" title={m.seen ? 'Vu' : 'Envoyé'}>{m.seen ? 'done_all' : 'done'}</span>}{m.mine && m.seen && 'Vu'}</span>}
+        </li>; })}
       </ol>
       <div ref={end} />
       {error && <p role="alert" className="mt-3 text-sm text-blood">{error}</p>}

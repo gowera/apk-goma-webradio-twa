@@ -3,7 +3,7 @@ if (!defined('ABSPATH')) exit;
 // Friendships and private messages between verified app listeners; only friends may message each other.
 final class GWR_Social {
     public static function routes() {
-        $routes=['social/search'=>'GET','social/friends'=>'GET','social/request'=>'POST','social/respond'=>'POST','social/remove'=>'POST','social/messages'=>'GET','social/send'=>'POST'];
+        $routes=['social/search'=>'GET','social/friends'=>'GET','social/request'=>'POST','social/respond'=>'POST','social/remove'=>'POST','social/messages'=>'GET','social/send'=>'POST','social/club'=>'GET','social/post'=>'POST','social/like'=>'POST','social/unpost'=>'POST'];
         foreach($routes as $path=>$method) register_rest_route('goma-app/v1','/'.$path,['methods'=>$method,'permission_callback'=>['GWR_API','auth'],'callback'=>[self::class,substr($path,7)]]);
     }
     private static function pair($a,$b) { return [min($a,$b),max($a,$b)]; }
@@ -75,9 +75,9 @@ final class GWR_Social {
         global $wpdb; $me=GWR_API::uid(); $id=self::target($r,$me); if (is_wp_error($id)) return $id;
         if (self::relation($me,$id)!=='friend') return GWR_API::error('Seuls vos amis peuvent échanger avec vous.',403);
         $m=GWR_Store::t('messages'); $after=absint($r->get_param('after'));
-        $rows=$wpdb->get_results($wpdb->prepare("SELECT id,sender,body,created FROM $m WHERE id>%d AND ((sender=%d AND recipient=%d) OR (sender=%d AND recipient=%d)) ORDER BY id DESC LIMIT 100",$after,$me,$id,$id,$me),ARRAY_A);
+        $rows=$wpdb->get_results($wpdb->prepare("SELECT id,sender,body,created,read_at FROM $m WHERE id>%d AND ((sender=%d AND recipient=%d) OR (sender=%d AND recipient=%d)) ORDER BY id DESC LIMIT 100",$after,$me,$id,$id,$me),ARRAY_A);
         $wpdb->query($wpdb->prepare("UPDATE $m SET read_at=%s WHERE sender=%d AND recipient=%d AND read_at IS NULL",current_time('mysql',true),$id,$me));
-        return ['friend'=>self::person($id,$me),'messages'=>array_map(fn($x)=>['id'=>(int)$x['id'],'mine'=>(int)$x['sender']===$me,'body'=>$x['body'],'created'=>$x['created']],array_reverse($rows))];
+        return ['friend'=>self::person($id,$me),'messages'=>array_map(fn($x)=>['id'=>(int)$x['id'],'mine'=>(int)$x['sender']===$me,'body'=>$x['body'],'created'=>$x['created'],'seen'=>(int)$x['sender']===$me && $x['read_at']!==null],array_reverse($rows))];
     }
     public static function send($r) {
         global $wpdb; $me=GWR_API::uid(); $id=self::target($r,$me); if (is_wp_error($id)) return $id;
@@ -87,6 +87,41 @@ final class GWR_Social {
         $m=GWR_Store::t('messages');
         if ((int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $m WHERE sender=%d AND created>=%s",$me,gmdate('Y-m-d H:i:s',time()-60)))>=20) return GWR_API::error('Vous envoyez trop de messages. Patientez une minute.',429);
         if ($wpdb->insert($m,['sender'=>$me,'recipient'=>$id,'body'=>$body,'created'=>current_time('mysql',true)])===false) return GWR_API::error('Message non envoyé. Réessayez.',503);
-        return ['id'=>(int)$wpdb->insert_id,'mine'=>true,'body'=>$body,'created'=>current_time('mysql',true)];
+        return ['id'=>(int)$wpdb->insert_id,'mine'=>true,'body'=>$body,'created'=>current_time('mysql',true),'seen'=>false];
+    }
+
+    // Listener club: public wall for verified members, likes, top listeners and newest members.
+    public static function club($r) {
+        global $wpdb; $me=GWR_API::uid(); $p=GWR_Store::t('club_posts'); $l=GWR_Store::t('club_likes'); $a=GWR_Store::t('accounts');
+        $verified="JOIN {$wpdb->usermeta} v ON v.user_id=a.user_id AND v.meta_key='gwr_verified' AND v.meta_value='1'";
+        $before=absint($r->get_param('before'));
+        $posts=$wpdb->get_results($wpdb->prepare("SELECT p.id,p.user_id,p.body,p.created,(SELECT COUNT(*) FROM $l x WHERE x.post_id=p.id) likes,(SELECT COUNT(*) FROM $l y WHERE y.post_id=p.id AND y.user_id=%d) liked FROM $p p WHERE (%d=0 OR p.id<%d) ORDER BY p.id DESC LIMIT 20",$me,$before,$before),ARRAY_A);
+        $map=fn($id)=>self::person((int)$id,$me);
+        return [
+          'members'=>(int)$wpdb->get_var("SELECT COUNT(*) FROM $a a $verified"),
+          'posts'=>array_map(fn($x)=>['id'=>(int)$x['id'],'author'=>$map($x['user_id']),'mine'=>(int)$x['user_id']===$me,'body'=>$x['body'],'created'=>$x['created'],'likes'=>(int)$x['likes'],'liked'=>(bool)$x['liked']],$posts),
+          'top'=>array_map(fn($x)=>$map($x)+['points'=>(int)$wpdb->get_var($wpdb->prepare("SELECT balance FROM $a WHERE user_id=%d",$x))],$wpdb->get_col("SELECT a.user_id FROM $a a $verified ORDER BY a.balance DESC,a.user_id LIMIT 10")),
+          'newest'=>array_map($map,$wpdb->get_col($wpdb->prepare("SELECT a.user_id FROM $a a $verified WHERE a.user_id<>%d ORDER BY a.created DESC LIMIT 10",$me))),
+        ];
+    }
+    public static function post($r) {
+        global $wpdb; $me=GWR_API::uid(); $p=GWR_Store::t('club_posts');
+        if (!self::listener($me)) return GWR_API::error('Confirmez votre email pour publier dans le club.',403);
+        $body=trim(sanitize_textarea_field(wp_unslash((string)$r->get_param('body'))));
+        if ($body==='' || mb_strlen($body)>500) return GWR_API::error('Publication vide ou trop longue (500 caractères maximum).');
+        if ((int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $p WHERE user_id=%d AND created>=%s",$me,gmdate('Y-m-d H:i:s',time()-600)))>=5) return GWR_API::error('Trop de publications. Patientez quelques minutes.',429);
+        if ($wpdb->insert($p,['user_id'=>$me,'body'=>$body,'created'=>current_time('mysql',true)])===false) return GWR_API::error('Publication impossible. Réessayez.',503);
+        return ['id'=>(int)$wpdb->insert_id,'author'=>self::person($me,$me),'mine'=>true,'body'=>$body,'created'=>current_time('mysql',true),'likes'=>0,'liked'=>false];
+    }
+    public static function like($r) {
+        global $wpdb; $me=GWR_API::uid(); $id=absint($r->get_param('post_id')); $l=GWR_Store::t('club_likes');
+        if (!$wpdb->get_var($wpdb->prepare('SELECT id FROM '.GWR_Store::t('club_posts').' WHERE id=%d',$id))) return GWR_API::error('Publication introuvable.',404);
+        if (!$wpdb->delete($l,['post_id'=>$id,'user_id'=>$me])) $wpdb->query($wpdb->prepare("INSERT IGNORE INTO $l (post_id,user_id) VALUES (%d,%d)",$id,$me));
+        return ['likes'=>(int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $l WHERE post_id=%d",$id)),'liked'=>(bool)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $l WHERE post_id=%d AND user_id=%d",$id,$me))];
+    }
+    public static function unpost($r) {
+        global $wpdb; $me=GWR_API::uid(); $id=absint($r->get_param('post_id'));
+        if ($wpdb->delete(GWR_Store::t('club_posts'),['id'=>$id,'user_id'=>$me])) $wpdb->delete(GWR_Store::t('club_likes'),['post_id'=>$id]);
+        return ['deleted'=>true];
     }
 }

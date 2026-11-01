@@ -54,10 +54,10 @@ final class GWR_API {
         if (!is_email($email) || strlen($name)<2 || strlen($name)>80 || strlen($password)<10 || strlen($password)>200 || !$r['consent']) return self::error('Nom, email, mot de passe de 10 caractères et acceptation des conditions requis.');
         if (email_exists($email)) return ['message'=>'Si cette adresse peut recevoir un compte, un email de confirmation sera envoyé. Sinon, connectez-vous ou réinitialisez votre mot de passe.'];
         $ref=0;
-        if ($r['referral']) { $ref=(int)$wpdb->get_var($wpdb->prepare('SELECT user_id FROM '.GWR_Store::t('accounts').' WHERE code=%s',sanitize_text_field($r['referral']))); if (!$ref) return self::error('Code de parrainage introuvable.'); }
+        if ($r['referral']) { $ref=(int)$wpdb->get_var($wpdb->prepare('SELECT user_id FROM '.GWR_Store::t('accounts').' WHERE code=%s',strtoupper(trim(sanitize_text_field($r['referral']))))); if (!$ref) return self::error('Code de parrainage introuvable.'); }
         $uid=wp_insert_user(['user_login'=>'gwr_'.bin2hex(random_bytes(12)),'user_email'=>$email,'display_name'=>$name,'user_pass'=>$password,'role'=>'gwr_listener']);
         if (is_wp_error($uid)) return self::error('Inscription impossible. Réessayez.',400);
-        $ok=$wpdb->insert(GWR_Store::t('accounts'),['user_id'=>$uid,'code'=>bin2hex(random_bytes(8)),'referrer'=>$ref,'created'=>current_time('mysql',true)]);
+        $ok=$wpdb->insert(GWR_Store::t('accounts'),['user_id'=>$uid,'code'=>GWR_Store::new_code(),'referrer'=>$ref,'created'=>current_time('mysql',true)]);
         if (!$ok) { require_once ABSPATH.'wp-admin/includes/user.php'; wp_delete_user($uid); return self::error('Inscription non enregistrée.',503); }
         update_user_meta($uid,'gwr_consent',gmdate('c'));
         // Welcome bonus is server-defined and idempotent: one credit per account, ever.
@@ -109,7 +109,7 @@ final class GWR_API {
         $a=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.GWR_Store::t('accounts').' WHERE user_id=%d',$uid),ARRAY_A);
         $listen=$wpdb->get_row($wpdb->prepare('SELECT seconds,last_tick FROM '.GWR_Store::t('listens').' WHERE user_id=%d',$uid),ARRAY_A);
         return ['id'=>$uid,'name'=>$u->display_name,'email'=>$u->user_email,'balance'=>(int)$a['balance'],'code'=>$a['code'],
-          'invite_url'=>add_query_arg('gwr_invite',$a['code'],home_url('/')),
+          'invite_url'=>add_query_arg('ref',$a['code'],untrailingslashit(GWR_Store::settings()['app_url']).'/inscription'),
           'referrals'=>(int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.GWR_Store::t('accounts').' WHERE referrer=%d AND qualified=1',$uid)),
           'listen_seconds'=>$listen && time()-(int)$listen['last_tick']<=90?(int)$listen['seconds']:0,
           'ledger'=>$wpdb->get_results($wpdb->prepare('SELECT id,kind,points,created FROM '.GWR_Store::t('ledger').' WHERE user_id=%d ORDER BY id DESC LIMIT 50',$uid),ARRAY_A),
@@ -204,7 +204,7 @@ final class GWR_API {
     }
     public static function invite() {
         if (!isset($_GET['gwr_invite'])) return;
-        global $wpdb; $code=sanitize_text_field(wp_unslash($_GET['gwr_invite']));
+        global $wpdb; $code=strtoupper(sanitize_text_field(wp_unslash($_GET['gwr_invite'])));
         if (!$wpdb->get_var($wpdb->prepare('SELECT user_id FROM '.GWR_Store::t('accounts').' WHERE code=%s',$code))) { status_header(404); exit('Invitation introuvable.'); }
         $url=add_query_arg('ref',$code,GWR_Store::settings()['app_url'].'/inscription');
         nocache_headers();
