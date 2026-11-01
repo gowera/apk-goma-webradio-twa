@@ -20,6 +20,7 @@ final class GWR_API {
         $uid=(int)$wpdb->get_var($wpdb->prepare('SELECT user_id FROM '.GWR_Store::t('sessions').' WHERE hash=%s AND expires>%d',hash('sha256',$m[1]),time()));
         $u=get_userdata($uid);
         if (!$u || !in_array('gwr_listener',$u->roles,true) || !get_user_meta($uid,'gwr_verified',true)) return self::error('Votre session a expiré.',401);
+        $wpdb->query($wpdb->prepare('UPDATE '.GWR_Store::t('sessions').' SET expires=%d WHERE hash=%s AND expires<%d',time()+365*DAY_IN_SECONDS,hash('sha256',$m[1]),time()+358*DAY_IN_SECONDS));
         self::$uid=$uid; return true;
     }
     private static function limit($r,$kind,$max=10) {
@@ -34,10 +35,10 @@ final class GWR_API {
     private static function issue($uid) {
         global $wpdb;
         $token=bin2hex(random_bytes(32));
-        $ok=$wpdb->insert(GWR_Store::t('sessions'),['user_id'=>$uid,'hash'=>hash('sha256',$token),'expires'=>time()+7*DAY_IN_SECONDS]);
+        $ok=$wpdb->insert(GWR_Store::t('sessions'),['user_id'=>$uid,'hash'=>hash('sha256',$token),'expires'=>time()+365*DAY_IN_SECONDS]);
         if (!$ok) return self::error('Connexion temporairement indisponible.',503);
         self::$uid=$uid;
-        return ['token'=>$token,'expires'=>time()+7*DAY_IN_SECONDS,'user'=>self::me()];
+        return ['token'=>$token,'expires'=>time()+365*DAY_IN_SECONDS,'user'=>self::me()];
     }
     private static function send_link($uid,$kind) {
         $user=get_userdata($uid); $token=bin2hex(random_bytes(32));

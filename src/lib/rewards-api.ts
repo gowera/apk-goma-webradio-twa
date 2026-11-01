@@ -4,9 +4,18 @@ export type RewardRules = { welcome: number; read: number; share_app: number; sh
 export type RewardUser = { id: number; name: string; email: string; balance: number; code: string; invite_url: string; referrals: number; listen_seconds: number; ledger: { id: string; kind: string; points: number; created: string }[]; claims: { id: string; title: string; status: string; cost: number; created: string }[] };
 export type Gift = { id: string; title: string; cost: string; stock: string };
 export class RewardsError extends Error { constructor(message: string, public status: number) { super(message); } }
-export function sessionToken() { try { return window.sessionStorage.getItem(TOKEN_KEY); } catch { return null; } }
+export function sessionToken() {
+  try {
+    const saved = window.localStorage.getItem(TOKEN_KEY);
+    if (saved) return saved;
+    const legacy = window.sessionStorage.getItem(TOKEN_KEY);
+    if (legacy) { window.localStorage.setItem(TOKEN_KEY, legacy); window.sessionStorage.removeItem(TOKEN_KEY); }
+    return legacy;
+  } catch { return null; }
+}
 export function saveToken(token: string | null) {
-  if (token) window.sessionStorage.setItem(TOKEN_KEY, token); else window.sessionStorage.removeItem(TOKEN_KEY);
+  try { window.sessionStorage.removeItem(TOKEN_KEY); } catch { /* ignore */ }
+  if (token) window.localStorage.setItem(TOKEN_KEY, token); else window.localStorage.removeItem(TOKEN_KEY);
   window.dispatchEvent(new Event('gwr-session-change'));
 }
 export async function rewardsRequest<T>(path: string, body?: unknown, keepalive = false): Promise<T> {
