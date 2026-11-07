@@ -19,3 +19,5 @@ Launch prerequisite: the site owner must install/activate the ZIP on gomawebradi
 - [ ] Add a dismissible rewards invitation after signed-out article reading.
 - [x] Add WordPress publication newsletter (v1.3.0 ZIP delivered; live WordPress send test pending).
 - [ ] Verify the invitation and deliver the inspected updated plugin ZIP.
+- [ ] Finish and test four-character app referral links, listener club posts/likes and friend messaging against isolated WordPress.
+- [ ] Verify connected club and conversation screens, then deliver the inspected version 1.6.0 plugin ZIP.
