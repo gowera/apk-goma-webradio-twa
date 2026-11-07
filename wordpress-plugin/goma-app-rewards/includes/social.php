@@ -74,10 +74,15 @@ final class GWR_Social {
     public static function messages($r) {
         global $wpdb; $me=GWR_API::uid(); $id=self::target($r,$me); if (is_wp_error($id)) return $id;
         if (self::relation($me,$id)!=='friend') return GWR_API::error('Seuls vos amis peuvent échanger avec vous.',403);
-        $m=GWR_Store::t('messages'); $after=absint($r->get_param('after'));
-        $rows=$wpdb->get_results($wpdb->prepare("SELECT id,sender,body,created,read_at FROM $m WHERE id>%d AND ((sender=%d AND recipient=%d) OR (sender=%d AND recipient=%d)) ORDER BY id DESC LIMIT 100",$after,$me,$id,$id,$me),ARRAY_A);
-        $wpdb->query($wpdb->prepare("UPDATE $m SET read_at=%s WHERE sender=%d AND recipient=%d AND read_at IS NULL",current_time('mysql',true),$id,$me));
-        return ['friend'=>self::person($id,$me),'messages'=>array_map(fn($x)=>['id'=>(int)$x['id'],'mine'=>(int)$x['sender']===$me,'body'=>$x['body'],'created'=>$x['created'],'seen'=>(int)$x['sender']===$me && $x['read_at']!==null],array_reverse($rows))];
+        $m=GWR_Store::t('messages'); $after=absint($r->get_param('after')); $before=absint($r->get_param('before'));
+        $order=$after ? 'ASC' : 'DESC';
+        $rows=$wpdb->get_results($wpdb->prepare("SELECT id,sender,body,created,read_at FROM $m WHERE id>%d AND (%d=0 OR id<%d) AND ((sender=%d AND recipient=%d) OR (sender=%d AND recipient=%d)) ORDER BY id $order LIMIT 101",$after,$before,$before,$me,$id,$id,$me),ARRAY_A);
+        $has_more=count($rows)>100; $rows=array_slice($rows,0,100);
+        $received=array_column(array_filter($rows,fn($x)=>(int)$x['sender']===$id),'id');
+        // Mark only the messages returned to the recipient as read.
+        if ($received) $wpdb->query($wpdb->prepare("UPDATE $m SET read_at=%s WHERE sender=%d AND recipient=%d AND read_at IS NULL AND id IN (".implode(',',array_map('absint',$received)).')',current_time('mysql',true),$id,$me));
+        $seen=$wpdb->get_col($wpdb->prepare("SELECT id FROM $m WHERE sender=%d AND recipient=%d AND read_at IS NOT NULL ORDER BY id DESC LIMIT 100",$me,$id));
+        return ['friend'=>self::person($id,$me),'has_more'=>$has_more,'seen_ids'=>array_map('intval',$seen),'messages'=>array_map(fn($x)=>['id'=>(int)$x['id'],'mine'=>(int)$x['sender']===$me,'body'=>$x['body'],'created'=>$x['created'],'seen'=>(int)$x['sender']===$me && $x['read_at']!==null],$after?$rows:array_reverse($rows))];
     }
     public static function send($r) {
         global $wpdb; $me=GWR_API::uid(); $id=self::target($r,$me); if (is_wp_error($id)) return $id;
@@ -95,7 +100,7 @@ final class GWR_Social {
         global $wpdb; $me=GWR_API::uid(); $p=GWR_Store::t('club_posts'); $l=GWR_Store::t('club_likes'); $a=GWR_Store::t('accounts');
         $verified="JOIN {$wpdb->usermeta} v ON v.user_id=a.user_id AND v.meta_key='gwr_verified' AND v.meta_value='1'";
         $before=absint($r->get_param('before'));
-        $posts=$wpdb->get_results($wpdb->prepare("SELECT p.id,p.user_id,p.body,p.created,(SELECT COUNT(*) FROM $l x WHERE x.post_id=p.id) likes,(SELECT COUNT(*) FROM $l y WHERE y.post_id=p.id AND y.user_id=%d) liked FROM $p p WHERE (%d=0 OR p.id<%d) ORDER BY p.id DESC LIMIT 20",$me,$before,$before),ARRAY_A);
+        $posts=$wpdb->get_results($wpdb->prepare("SELECT p.id,p.user_id,p.body,p.created,(SELECT COUNT(*) FROM $l x WHERE x.post_id=p.id) likes,(SELECT COUNT(*) FROM $l y WHERE y.post_id=p.id AND y.user_id=%d) liked FROM $p p JOIN $a a ON a.user_id=p.user_id $verified WHERE (%d=0 OR p.id<%d) ORDER BY p.id DESC LIMIT 20",$me,$before,$before),ARRAY_A);
         $map=fn($id)=>self::person((int)$id,$me);
         return [
           'members'=>(int)$wpdb->get_var("SELECT COUNT(*) FROM $a a $verified"),
@@ -115,7 +120,8 @@ final class GWR_Social {
     }
     public static function like($r) {
         global $wpdb; $me=GWR_API::uid(); $id=absint($r->get_param('post_id')); $l=GWR_Store::t('club_likes');
-        if (!$wpdb->get_var($wpdb->prepare('SELECT id FROM '.GWR_Store::t('club_posts').' WHERE id=%d',$id))) return GWR_API::error('Publication introuvable.',404);
+        $author=$wpdb->get_var($wpdb->prepare('SELECT user_id FROM '.GWR_Store::t('club_posts').' WHERE id=%d',$id));
+        if (!$author || !self::listener((int)$author)) return GWR_API::error('Publication introuvable.',404);
         if (!$wpdb->delete($l,['post_id'=>$id,'user_id'=>$me])) $wpdb->query($wpdb->prepare("INSERT IGNORE INTO $l (post_id,user_id) VALUES (%d,%d)",$id,$me));
         return ['likes'=>(int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $l WHERE post_id=%d",$id)),'liked'=>(bool)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $l WHERE post_id=%d AND user_id=%d",$id,$me))];
     }

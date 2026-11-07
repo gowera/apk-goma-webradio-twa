@@ -2,7 +2,7 @@
 /**
  * Plugin Name: GOMA WEBRADIO — Récompenses Application
  * Description: Comptes réservés à l’application, parrainages, points et cadeaux. API sécurisée et administration WordPress.
- * Version: 1.5.0
+ * Version: 1.6.0
  * Requires at least: 6.5
  * Requires PHP: 8.0
  * Author: GOMA WEBRADIO

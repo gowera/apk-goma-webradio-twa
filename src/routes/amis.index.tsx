@@ -27,12 +27,13 @@ function FriendsPage() {
   const [q, setQ] = useState('');
   const [results, setResults] = useState<Person[]>([]);
   const [message, setMessage] = useState('');
-  const load = useCallback(async () => { try { setLists(await friendLists()); } catch (e) { setMessage(e instanceof Error ? e.message : 'Amis indisponibles.'); } }, []);
+  const load = useCallback(async () => { try { setLists(await friendLists()); setMessage(''); } catch (e) { setMessage(e instanceof Error ? e.message : 'Amis indisponibles.'); } }, []);
   useEffect(() => { if (!user) return; void load(); const t = window.setInterval(() => void load(), 15000); return () => window.clearInterval(t); }, [user?.id, load]);
   useEffect(() => {
     if (!user || q.trim().length < 2) { setResults([]); return; }
-    const t = window.setTimeout(() => { searchListeners(q.trim()).then(setResults).catch(e => setMessage(e.message)); }, 350);
-    return () => window.clearTimeout(t);
+    let current = true;
+    const t = window.setTimeout(() => { searchListeners(q.trim()).then(r => { if (current) setResults(r); }).catch(e => { if (current) setMessage(e.message); }); }, 350);
+    return () => { current = false; window.clearTimeout(t); };
   }, [q, user?.id]);
   const act = async (fn: () => Promise<unknown>) => { setMessage(''); try { await fn(); await load(); if (q.trim().length >= 2) setResults(await searchListeners(q.trim())); } catch (e) { setMessage(e instanceof Error ? e.message : 'Opération impossible.'); } };
 

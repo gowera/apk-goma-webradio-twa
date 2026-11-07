@@ -1,6 +1,6 @@
 # GOMA WEBRADIO — Récompenses Application
 
-Plugin WordPress installable, version 1.2.0. WordPress 6.5+, PHP 8.0+, MySQL/MariaDB avec tables InnoDB et HTTPS requis. Les comptes et toutes les opérations de points restent sur votre WordPress ; aucun compte ni solde n’est enregistré dans Lovable Cloud.
+Plugin WordPress installable, version 1.6.0. WordPress 6.5+, PHP 8.0+, MySQL/MariaDB avec tables InnoDB et HTTPS requis. Les comptes et toutes les opérations de points restent sur votre WordPress ; aucun compte ni solde n’est enregistré dans Lovable Cloud.
 
 ## Installation
 
@@ -56,17 +56,25 @@ L’écoute est suivie par battements toutes les 30 secondes et temps serveur. U
 
 Un navigateur ne peut pas prouver une installation depuis Google Play, la publication effective d’un partage social ou l’attention de l’auditeur. Le plugin suit des déclarations avec limites, sessions uniques et détection des doublons ; il ne constitue pas une preuve inviolable d’écoute. Le parrainage est donc qualifié par confirmation email et première récompense, **pas par téléchargement vérifié**. Pour une campagne à forte valeur, ajouter une validation manuelle/antifraude avant remise des cadeaux.
 
-Les liens d’invitation ouvrent une page WordPress avec le lien Google Play et le code : après installation, le filleul doit utiliser ce code à l’inscription. Le code n’est pas transmis automatiquement à travers le téléchargement Play Store.
+Les liens d’invitation ouvrent `/inscription?ref=CODE` dans l’application, avec un code de **4 caractères** (lettres/chiffres). Les anciens codes sont remplacés à la mise à jour ; leurs liens restent valides grâce à des alias enregistrés dans WordPress. Le code est prérempli et conservé sur ce navigateur jusqu’à l’inscription. Le code n’est pas transmis automatiquement à travers le téléchargement Play Store.
 
 ## Administration
 
 Dans **GOMA Récompenses** : barème, plafonds, cadeaux/coût/stock, demandes (remise ou annulation avec remboursement et remise en stock), auditeurs, classement et journal. Ajustements manuels avec motif et identifiant administrateur enregistrés. Les demandes ne génèrent pas automatiquement un email de remise : l’équipe doit contacter l’auditeur à l’adresse indiquée dans l’administration.
 
-Le solde et le stock sont modifiés sous transaction avec verrouillage ; les récompenses et réservations sont idempotentes. Les comptes ont un rôle sans droits d’administration. Les jetons de session aléatoires sont stockés hachés sur WordPress (validité 7 jours), et seulement dans la session du navigateur côté app : après fermeture de cette session, une reconnexion peut être nécessaire. La récupération de mot de passe révoque les anciennes sessions. Les liens email sont temporaires et à usage unique.
+Le solde et le stock sont modifiés sous transaction avec verrouillage ; les récompenses et réservations sont idempotentes. Les comptes ont un rôle sans droits d’administration. Les jetons de session aléatoires sont stockés hachés sur WordPress (validité glissante de 365 jours), et conservés sur le navigateur de l’application après fermeture. La récupération de mot de passe révoque les anciennes sessions. Les liens email sont temporaires et à usage unique.
 
 Autoriser l’en-tête `Authorization` jusqu’à PHP si votre hébergeur ou pare-feu le filtre. Exclure `/wp-json/goma-app/v1/*` et les invitations `?gwr_invite=...` des caches/CDN. Ne jamais réécrire les réponses privées en pages HTML. Aucune clé privée ni mot de passe n’est inclus dans le plugin.
 
 ## Données et sauvegardes
+
+## Club, amis et messages (version 1.6.0)
+
+`/club` affiche le mur, les nouveaux membres, le classement et l’accès aux discussions. Les membres confirmés peuvent publier (500 caractères maximum, 5 publications/10 minutes), aimer et supprimer leurs propres publications. `/amis` permet de rechercher un auditeur, envoyer/accepter/refuser/annuler une demande. Seuls les amis acceptés échangent des messages (1000 caractères, 20 messages/minute). Les conversations affichent les accusés de lecture et donnent accès aux messages précédents. Toutes ces données restent dans les tables WordPress `gwr_friends`, `gwr_messages`, `gwr_club_posts`, `gwr_club_likes`. Ce ne sont pas des messages chiffrés de bout en bout : les administrateurs ayant accès à la base peuvent les consulter. Prévoir une politique de confidentialité et de modération avant lancement.
+
+## Newsletter (version 1.3.0)
+
+Chaque nouvelle publication est mise en file une seule fois par membre confirmé ; un cron de 5 minutes envoie un email HTML avec titre, image mise en avant, bref résumé et bouton « Lire plus » vers l’application. Le lien de désabonnement signé demande confirmation et ne supprime ni compte ni points. L’envoi utilise le service email WordPress ; vérifier la réception réelle après installation.
 
 Tables `gwr_accounts`, `gwr_sessions`, `gwr_ledger`, `gwr_listens`, `gwr_reads`, `gwr_gifts`, `gwr_claims`, préfixées selon WordPress. Les utilisateurs sont dans la table utilisateurs WordPress avec le rôle application. Le nettoyage quotidien supprime les sessions expirées et suivis temporaires ; les comptes, soldes et journaux restent conservés.
 
