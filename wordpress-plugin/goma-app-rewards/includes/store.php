@@ -30,7 +30,11 @@ final class GWR_Store {
             $wpdb->insert(self::t('gifts'), ['title'=>'Chapeau GOMA WEBRADIO','cost'=>0,'stock'=>0,'active'=>0]);
         }
         // Referral codes are short (4 characters); older long codes are replaced once on upgrade.
-        foreach($wpdb->get_col('SELECT user_id FROM '.self::t('accounts').' WHERE CHAR_LENGTH(code)<>4') as $uid) $wpdb->update(self::t('accounts'),['code'=>self::new_code()],['user_id'=>(int)$uid]);
+        foreach($wpdb->get_results('SELECT user_id,code FROM '.self::t('accounts').' WHERE CHAR_LENGTH(code)<>4') as $account) {
+            // Keep previously shared invitations usable while displaying only short codes.
+            if (!in_array($account->code,get_user_meta((int)$account->user_id,'gwr_referral_alias'),true)) add_user_meta((int)$account->user_id,'gwr_referral_alias',$account->code);
+            if ($wpdb->update(self::t('accounts'),['code'=>self::new_code()],['user_id'=>(int)$account->user_id])===false) return;
+        }
         update_option('gwr_version', GWR_VERSION);
         if (!wp_next_scheduled('gwr_cleanup')) wp_schedule_event(time()+3600,'daily','gwr_cleanup');
     }
@@ -39,6 +43,12 @@ final class GWR_Store {
         do { $code=''; for($i=0;$i<4;$i++) $code.=$alphabet[random_int(0,strlen($alphabet)-1)]; }
         while ($wpdb->get_var($wpdb->prepare('SELECT user_id FROM '.self::t('accounts').' WHERE code=%s',$code)));
         return $code;
+    }
+    public static function referral_user($code) {
+        global $wpdb; $code=strtoupper(trim(sanitize_text_field($code)));
+        $uid=(int)$wpdb->get_var($wpdb->prepare('SELECT user_id FROM '.self::t('accounts').' WHERE code=%s',$code));
+        if ($uid) return $uid;
+        return (int)$wpdb->get_var($wpdb->prepare('SELECT a.user_id FROM '.self::t('accounts')." a JOIN {$wpdb->usermeta} m ON m.user_id=a.user_id WHERE m.meta_key='gwr_referral_alias' AND m.meta_value=%s LIMIT 1",$code));
     }
     public static function settings() { $s=get_option('gwr_settings',[]); $s['rules']=array_merge(GWR_Rules::defaults(),$s['rules']??[]); return $s; }
     public static function atomic($uid, $fn) {
@@ -76,6 +86,7 @@ final class GWR_Store {
         foreach(['accounts','sessions','ledger','listens','reads','claims','emails','newsletter'] as $t) $wpdb->delete(self::t($t),['user_id'=>$uid]);
         foreach(['user_a','user_b'] as $c) $wpdb->delete(self::t('friends'),[$c=>$uid]);
         foreach(['sender','recipient'] as $c) $wpdb->delete(self::t('messages'),[$c=>$uid]);
+        $wpdb->query($wpdb->prepare('DELETE l FROM '.self::t('club_likes').' l JOIN '.self::t('club_posts').' p ON p.id=l.post_id WHERE p.user_id=%d',$uid));
         $wpdb->delete(self::t('club_likes'),['user_id'=>$uid]); $wpdb->delete(self::t('club_posts'),['user_id'=>$uid]);
         $wpdb->update(self::t('accounts'),['referrer'=>0],['referrer'=>$uid]);
     }

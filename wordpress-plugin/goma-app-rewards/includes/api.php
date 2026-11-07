@@ -54,7 +54,7 @@ final class GWR_API {
         if (!is_email($email) || strlen($name)<2 || strlen($name)>80 || strlen($password)<10 || strlen($password)>200 || !$r['consent']) return self::error('Nom, email, mot de passe de 10 caractères et acceptation des conditions requis.');
         if (email_exists($email)) return ['message'=>'Si cette adresse peut recevoir un compte, un email de confirmation sera envoyé. Sinon, connectez-vous ou réinitialisez votre mot de passe.'];
         $ref=0;
-        if ($r['referral']) { $ref=(int)$wpdb->get_var($wpdb->prepare('SELECT user_id FROM '.GWR_Store::t('accounts').' WHERE code=%s',strtoupper(trim(sanitize_text_field($r['referral']))))); if (!$ref) return self::error('Code de parrainage introuvable.'); }
+        if ($r['referral']) { $ref=GWR_Store::referral_user($r['referral']); if (!$ref) return self::error('Code de parrainage introuvable.'); }
         $uid=wp_insert_user(['user_login'=>'gwr_'.bin2hex(random_bytes(12)),'user_email'=>$email,'display_name'=>$name,'user_pass'=>$password,'role'=>'gwr_listener']);
         if (is_wp_error($uid)) return self::error('Inscription impossible. Réessayez.',400);
         $ok=$wpdb->insert(GWR_Store::t('accounts'),['user_id'=>$uid,'code'=>GWR_Store::new_code(),'referrer'=>$ref,'created'=>current_time('mysql',true)]);
@@ -205,7 +205,9 @@ final class GWR_API {
     public static function invite() {
         if (!isset($_GET['gwr_invite'])) return;
         global $wpdb; $code=strtoupper(sanitize_text_field(wp_unslash($_GET['gwr_invite'])));
-        if (!$wpdb->get_var($wpdb->prepare('SELECT user_id FROM '.GWR_Store::t('accounts').' WHERE code=%s',$code))) { status_header(404); exit('Invitation introuvable.'); }
+        $uid=GWR_Store::referral_user($code);
+        if (!$uid) { status_header(404); exit('Invitation introuvable.'); }
+        $code=$wpdb->get_var($wpdb->prepare('SELECT code FROM '.GWR_Store::t('accounts').' WHERE user_id=%d',$uid));
         $url=add_query_arg('ref',$code,GWR_Store::settings()['app_url'].'/inscription');
         nocache_headers();
         echo '<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Invitation — GOMA WEBRADIO</title><body><main><h1>GOMA WEBRADIO</h1><p>Vous êtes invité à rejoindre les auditeurs de GOMA WEBRADIO.</p><p><a href="'.esc_url('https://play.google.com/store/apps/details?id=com.gomawebradio.app.twa&pcampaignid=web_share').'">Télécharger sur Google Play</a></p><p><a href="'.esc_url($url).'">Créer mon compte dans l’application</a></p><p>Code de parrainage : '.esc_html($code).'</p></main></body></html>'; exit;
