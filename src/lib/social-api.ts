@@ -8,7 +8,7 @@ export const friendLists = () => rewardsRequest<FriendLists>('social/friends');
 export const requestFriend = (user_id: number) => rewardsRequest<{ relation: Relation }>('social/request', { user_id });
 export const respondFriend = (user_id: number, accept: boolean) => rewardsRequest<{ relation: Relation }>('social/respond', { user_id, accept });
 export const removeFriend = (user_id: number) => rewardsRequest<{ relation: Relation }>('social/remove', { user_id });
-export const conversation = (user_id: number, after = 0) => rewardsRequest<{ friend: Person; messages: ChatMessage[] }>(`social/messages?user_id=${user_id}&after=${after}`);
+export const conversation = (user_id: number, after = 0, before = 0) => rewardsRequest<{ friend: Person; messages: ChatMessage[]; has_more: boolean; seen_ids: number[] }>(`social/messages?user_id=${user_id}&after=${after}&before=${before}`);
 export const sendMessage = (user_id: number, body: string) => rewardsRequest<ChatMessage>('social/send', { user_id, body });
 export type ClubPost = { id: number; author: Person; mine: boolean; body: string; created: string; likes: number; liked: boolean };
 export type Club = { members: number; posts: ClubPost[]; top: (Person & { points: number })[]; newest: Person[] };
