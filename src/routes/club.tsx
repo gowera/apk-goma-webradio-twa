@@ -31,7 +31,7 @@ function ClubPage() {
   const [moreBusy, setMoreBusy] = useState(false);
   const [pending, setPending] = useState<number[]>([]);
   const load = useCallback(async () => {
-    try { const [c, f] = await Promise.all([clubFeed(), friendLists()]); setClub(prev => prev && prev.posts.length > c.posts.length ? { ...c, posts: [...c.posts, ...prev.posts.filter(p => !c.posts.some(x => x.id === p.id) && p.id < (c.posts.at(-1)?.id ?? 0))] } : c); setUnread(f.friends.reduce((n, p) => n + (p.unread ?? 0), 0) + f.incoming.length); setError(''); }
+    try { const [c, f] = await Promise.all([clubFeed(), friendLists()]); setClub(prev => ({ ...c, posts: [...c.posts, ...(c.posts.length === 20 ? (prev?.posts ?? []).filter(p => p.id < (c.posts.at(-1)?.id ?? 0)) : [])].sort((a, b) => b.id - a.id) })); setUnread(f.friends.reduce((n, p) => n + (p.unread ?? 0), 0) + f.incoming.length); setError(''); }
     catch (e) { setError(e instanceof Error ? e.message : 'Club indisponible.'); }
   }, []);
   useEffect(() => { if (!user) return; void load(); const t = window.setInterval(() => { if (document.visibilityState === 'visible') void load(); }, 20000); return () => window.clearInterval(t); }, [user?.id, load]);

@@ -3,7 +3,9 @@
 if (!defined('WP_CLI') || !WP_CLI) exit;
 global $wpdb;
 function gs_call($path,$body=null,$token='') {
-    $r=new WP_REST_Request($body===null?'GET':'POST','/goma-app/v1/'.$path);
+    $parts=explode('?',$path,2);
+    $r=new WP_REST_Request($body===null?'GET':'POST','/goma-app/v1/'.$parts[0]);
+    if (isset($parts[1])) { parse_str($parts[1],$query); $r->set_query_params($query); }
     if ($body!==null) $r->set_body_params($body);
     if ($token) $r->set_header('authorization','Bearer '.$token);
     return rest_do_request($r);
