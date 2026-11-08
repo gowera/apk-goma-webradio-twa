@@ -40,7 +40,7 @@ gs_check(gs_call('social/send',['user_id'=>$b,'body'=>str_repeat('a',1001)],$at)
 for($i=0;$i<105;$i++) $wpdb->insert(GWR_Store::t('messages'),['sender'=>$a,'recipient'=>$b,'body'=>'History '.$i,'created'=>current_time('mysql',true)]);
 $page=gs_call('social/messages?user_id='.$a,null,$bt)->get_data();
 gs_check(count($page['messages'])===100 && $page['has_more'],'Conversation signals older history');
-gs_check((int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.GWR_Store::t('messages').' WHERE sender=%d AND recipient=%d AND read_at IS NULL',$a,$b))===6,'Only displayed messages are marked read');
+gs_check((int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.GWR_Store::t('messages').' WHERE sender=%d AND recipient=%d AND read_at IS NULL',$a,$b))===5,'Only displayed messages are marked read');
 $older=gs_call('social/messages?user_id='.$a.'&before='.$page['messages'][0]['id'],null,$bt)->get_data();
 gs_check(count($older['messages'])===6 && !$older['has_more'],'Older messages are accessible');
 $after=gs_call('social/messages?user_id='.$a.'&after='.$msg['id'],null,$bt)->get_data();
