@@ -125,7 +125,7 @@ function Home() {
       {/* Quick access */}
       <Link to="/recompenses" className="mt-5 flex items-center gap-3 border-b border-line py-4 text-ink">
         <span className="material-symbols-outlined text-3xl text-brand">redeem</span>
-        <span className="flex-1 font-bold">Mes points et cadeaux</span>
+        <span className="flex-1 font-bold">Mon profil et club des auditeurs</span>
         <span className="material-symbols-outlined text-inkmute">chevron_right</span>
       </Link>
       <section className="mt-5 grid grid-cols-2 gap-3">
