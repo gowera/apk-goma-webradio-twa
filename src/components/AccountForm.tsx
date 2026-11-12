@@ -51,7 +51,7 @@ export function AccountForm({ mode }: { mode: Mode }) {
     <div className="mx-auto max-w-md py-8">
       <img src={LOGO_URL} alt="GOMA WEBRADIO" className="mx-auto h-20 w-20 object-contain" />
       <h2 className="mt-5 text-center font-display text-2xl font-extrabold text-ink">{titles[mode]}</h2>
-      {user && ['login','signup'].includes(mode) ? <div className="mt-6 text-center"><p className="text-ink">Vous êtes connecté en tant que {user.name}.</p><Button asChild className="mt-4"><Link to="/recompenses">Mes points et cadeaux</Link></Button></div> : <form onSubmit={submit} className="mt-7 space-y-5">
+      {user && ['login','signup'].includes(mode) ? <div className="mt-6 text-center"><p className="text-ink">Vous êtes connecté en tant que {user.name}.</p><Button asChild className="mt-4"><Link to="/recompenses">Mon profil et club des auditeurs</Link></Button></div> : <form onSubmit={submit} className="mt-7 space-y-5">
         {mode === 'signup' && <Field label="Nom affiché"><Input value={name} onChange={e => setName(e.target.value)} autoComplete="nickname" required minLength={2} maxLength={80} /></Field>}
         <Field label="Adresse email"><Input type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required maxLength={254} /></Field>
         {['login','signup','reset'].includes(mode) && <Field label="Mot de passe"><Input aria-label="Mot de passe" type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required minLength={mode === 'login' ? 1 : 10} maxLength={200} />{mode !== 'login' && <span className="text-xs text-inkmute">10 caractères minimum</span>}</Field>}
