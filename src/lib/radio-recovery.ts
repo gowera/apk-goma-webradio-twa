@@ -9,7 +9,11 @@ export class RadioRecovery {
   private stream = "";
   private recovering = false;
 
-  constructor(private audio: RadioAudio, private onRecovering: () => void) {}
+  constructor(
+    private audio: RadioAudio,
+    private onRecovering: () => void,
+    private keepAlive?: { start(): void; stop(): void },
+  ) {}
 
   isActive() { return this.active; }
 
@@ -27,6 +31,7 @@ export class RadioRecovery {
     this.generation++;
     this.clearTimer();
     this.attempts = 0;
+    this.keepAlive?.stop();
   }
 
   playing() {
@@ -34,15 +39,18 @@ export class RadioRecovery {
     this.clearTimer();
     this.recovering = false;
     this.attempts = 0;
+    this.keepAlive?.stop();
   }
 
   interrupted(stalled = false) {
     if (!this.active) return;
     this.recovering = true;
+    // Keep the page audible so a sleeping phone does not freeze retry timers.
+    this.keepAlive?.start();
     this.onRecovering();
     if (this.timer !== undefined && stalled) return;
     this.clearTimer();
-    const delay = stalled ? 15000 : Math.min(3000 * 2 ** Math.min(this.attempts, 4), 30000);
+    const delay = stalled ? 10000 : Math.min(1000 * 2 ** Math.min(this.attempts, 3), 8000);
     this.timer = setTimeout(() => {
       this.timer = undefined;
       this.attempt(true);

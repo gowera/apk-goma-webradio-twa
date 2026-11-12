@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { createKeepAlive } from "@/lib/keep-alive";
 import { RadioRecovery } from "@/lib/radio-recovery";
 import { PlayerContext, type PlayerState, type Track, type Quality } from "./player-context";
 export type { Track, Quality } from "./player-context";
@@ -65,7 +66,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const audio = new Audio();
     audio.preload = "none";
     audioRef.current = audio;
-    const recovery = new RadioRecovery(audio, () => setLoading(true));
+    const recovery = new RadioRecovery(audio, () => setLoading(true), createKeepAlive());
     recoveryRef.current = recovery;
 
     // Restauration de l'état persisté

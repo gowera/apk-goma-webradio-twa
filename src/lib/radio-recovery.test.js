@@ -56,3 +56,19 @@ test("connectivity restoration immediately resumes a pending retry", () => {
   expect(audio.play).toHaveBeenCalledTimes(2);
   recovery.cancel();
 });
+test("a cut keeps the phone awake and retries within seconds", () => {
+  jest.useFakeTimers();
+  const audio = { src: "https://s.example/radio", load: jest.fn(), play: jest.fn(() => Promise.resolve()) };
+  const keep = { start: jest.fn(), stop: jest.fn() };
+  const recovery = new RadioRecovery(audio, jest.fn(), keep);
+  recovery.start(audio.src);
+  recovery.playing();
+  recovery.interrupted();
+  expect(keep.start).toHaveBeenCalled();
+  jest.advanceTimersByTime(1000);
+  expect(audio.load).toHaveBeenCalledTimes(1);
+  recovery.playing();
+  expect(keep.stop).toHaveBeenCalled();
+  recovery.cancel();
+  jest.useRealTimers();
+});
