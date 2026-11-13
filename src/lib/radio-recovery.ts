@@ -8,6 +8,10 @@ export class RadioRecovery {
   private generation = 0;
   private stream = "";
   private recovering = false;
+  private watchdog: ReturnType<typeof setInterval> | undefined;
+  private lastTime = -1;
+  private lastAdvance = 0;
+  private stableTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
     private audio: RadioAudio,
@@ -23,6 +27,23 @@ export class RadioRecovery {
     this.stream = stream;
     this.onRecovering();
     this.attempt(false);
+    // Detect silent freezes (encoder switch, server restart) where no audio event fires.
+    this.lastAdvance = Date.now();
+    this.watchdog = setInterval(() => this.check(), 2000);
+  }
+
+  /** Called on timeupdate: proves audio data is really flowing. */
+  progress(time: number) {
+    if (!this.active) return;
+    if (time !== this.lastTime) { this.lastTime = time; this.lastAdvance = Date.now(); }
+  }
+
+  private check() {
+    if (!this.active || this.recovering) return;
+    if (Date.now() - this.lastAdvance > 8000) {
+      this.lastAdvance = Date.now();
+      this.interrupted();
+    }
   }
 
   cancel() {
@@ -31,6 +52,9 @@ export class RadioRecovery {
     this.generation++;
     this.clearTimer();
     this.attempts = 0;
+    if (this.watchdog !== undefined) clearInterval(this.watchdog);
+    this.watchdog = undefined;
+    if (this.stableTimer !== undefined) clearTimeout(this.stableTimer);
     this.keepAlive?.stop();
   }
 
@@ -38,7 +62,10 @@ export class RadioRecovery {
     if (!this.active) return;
     this.clearTimer();
     this.recovering = false;
-    this.attempts = 0;
+    this.lastAdvance = Date.now();
+    // Only reset the backoff once playback has stayed up, so a flapping server is not hammered.
+    if (this.stableTimer !== undefined) clearTimeout(this.stableTimer);
+    this.stableTimer = setTimeout(() => { this.attempts = 0; }, 15000);
     this.keepAlive?.stop();
   }
 
@@ -50,7 +77,7 @@ export class RadioRecovery {
     this.onRecovering();
     if (this.timer !== undefined && stalled) return;
     this.clearTimer();
-    const delay = stalled ? 10000 : Math.min(1000 * 2 ** Math.min(this.attempts, 3), 8000);
+    const delay = stalled ? 10000 : Math.min(1000 * 2 ** Math.min(this.attempts, 3), 8000) + Math.floor(Math.random() * 500);
     this.timer = setTimeout(() => {
       this.timer = undefined;
       this.attempt(true);
