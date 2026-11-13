@@ -108,7 +108,7 @@ final class GWR_API {
         $uid=self::$uid; $u=get_userdata($uid);
         $a=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.GWR_Store::t('accounts').' WHERE user_id=%d',$uid),ARRAY_A);
         $listen=$wpdb->get_row($wpdb->prepare('SELECT seconds,last_tick FROM '.GWR_Store::t('listens').' WHERE user_id=%d',$uid),ARRAY_A);
-        return ['id'=>$uid,'name'=>$u->display_name,'email'=>$u->user_email,'balance'=>(int)$a['balance'],'code'=>$a['code'],
+        return GWR_Community::profile_fields($uid)+['id'=>$uid,'name'=>$u->display_name,'email'=>$u->user_email,'balance'=>(int)$a['balance'],'code'=>$a['code'],
           'invite_url'=>add_query_arg('ref',$a['code'],untrailingslashit(GWR_Store::settings()['app_url']).'/inscription'),
           'referrals'=>(int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.GWR_Store::t('accounts').' WHERE referrer=%d AND qualified=1',$uid)),
           'listen_seconds'=>$listen && time()-(int)$listen['last_tick']<=90?(int)$listen['seconds']:0,
@@ -117,7 +117,8 @@ final class GWR_API {
     }
     public static function profile($r) {
         $name=sanitize_text_field($r['name']); if (strlen($name)<2 || strlen($name)>80) return self::error('Nom de 2 à 80 caractères requis.');
-        $result=wp_update_user(['ID'=>self::$uid,'display_name'=>$name]); if (is_wp_error($result)) return self::error('Modification impossible.'); return self::me();
+        $result=wp_update_user(['ID'=>self::$uid,'display_name'=>$name]); if (is_wp_error($result)) return self::error('Modification impossible.');
+        $saved=GWR_Community::save_profile(self::$uid,$r); if (is_wp_error($saved)) return $saved; return self::me();
     }
     private static function qualify($uid) {
         global $wpdb;

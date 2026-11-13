@@ -2,7 +2,7 @@
 /**
  * Plugin Name: GOMA WEBRADIO — Récompenses Application
  * Description: Comptes réservés à l’application, parrainages, points et cadeaux. API sécurisée et administration WordPress.
- * Version: 1.6.0
+ * Version: 1.7.0
  * Requires at least: 6.5
  * Requires PHP: 8.0
  * Author: GOMA WEBRADIO
@@ -10,7 +10,7 @@
  * Text Domain: goma-app-rewards
  */
 if (!defined('ABSPATH')) exit;
-define('GWR_VERSION', '1.6.0');
+define('GWR_VERSION', '1.7.0');
 require_once __DIR__.'/includes/rules.php';
 require_once __DIR__.'/includes/store.php';
 require_once __DIR__.'/includes/api.php';
@@ -18,10 +18,14 @@ require_once __DIR__.'/includes/admin.php';
 require_once __DIR__.'/includes/weekly-emails.php';
 require_once __DIR__.'/includes/newsletter.php';
 require_once __DIR__.'/includes/social.php';
+require_once __DIR__.'/includes/community.php';
 register_activation_hook(__FILE__, ['GWR_Store','install']);
 add_action('plugins_loaded', function() { if (get_option('gwr_version') !== GWR_VERSION) GWR_Store::install(); });
 add_action('rest_api_init', ['GWR_API','routes']);
 add_action('rest_api_init', ['GWR_Social','routes']);
+add_action('rest_api_init', ['GWR_Community','routes']);
+add_action('gwr_club_push', ['GWR_Community','push']);
+add_action('admin_menu', ['GWR_Community','menu'], 20);
 add_action('admin_menu', ['GWR_Admin','menu']);
 add_action('gwr_cleanup', ['GWR_Store','cleanup']);
 add_action('gwr_weekly_emails', ['GWR_Weekly_Emails','run']);
