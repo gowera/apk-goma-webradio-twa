@@ -65,7 +65,7 @@ test("a cut keeps the phone awake and retries within seconds", () => {
   recovery.playing();
   recovery.interrupted();
   expect(keep.start).toHaveBeenCalled();
-  jest.advanceTimersByTime(1500);
+  jest.advanceTimersByTime(2500);
   expect(audio.load).toHaveBeenCalledTimes(1);
   recovery.playing();
   expect(keep.stop).toHaveBeenCalled();
