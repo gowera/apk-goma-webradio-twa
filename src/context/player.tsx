@@ -112,7 +112,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     audio.addEventListener("timeupdate", onTime);
     const onProgress = () => recovery.progress(audio.currentTime);
     audio.addEventListener("timeupdate", onProgress);
-    audio.addEventListener("emptied", onWaiting);
     audio.addEventListener("loadedmetadata", onMeta);
     audio.addEventListener("playing", onPlay);
     audio.addEventListener("pause", onPause);
@@ -127,6 +126,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       document.removeEventListener("visibilitychange", onVisible);
       audio.pause();
       audio.removeEventListener("timeupdate", onTime);
+      audio.removeEventListener("timeupdate", onProgress);
       audio.removeEventListener("loadedmetadata", onMeta);
       audio.removeEventListener("playing", onPlay);
       audio.removeEventListener("pause", onPause);

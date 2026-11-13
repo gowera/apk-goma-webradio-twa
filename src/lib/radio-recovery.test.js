@@ -65,10 +65,25 @@ test("a cut keeps the phone awake and retries within seconds", () => {
   recovery.playing();
   recovery.interrupted();
   expect(keep.start).toHaveBeenCalled();
-  jest.advanceTimersByTime(1000);
+  jest.advanceTimersByTime(1500);
   expect(audio.load).toHaveBeenCalledTimes(1);
   recovery.playing();
   expect(keep.stop).toHaveBeenCalled();
+  recovery.cancel();
+  jest.useRealTimers();
+});
+
+test("a silent freeze without any audio event is detected and reloaded", () => {
+  jest.useFakeTimers();
+  const audio = { src: "https://s.example/radio", load: jest.fn(), play: jest.fn(() => Promise.resolve()) };
+  const recovery = new RadioRecovery(audio, jest.fn());
+  recovery.start(audio.src);
+  recovery.playing();
+  recovery.progress(1);
+  jest.advanceTimersByTime(10000);
+  expect(audio.load).not.toHaveBeenCalled();
+  jest.advanceTimersByTime(4000);
+  expect(audio.load).toHaveBeenCalledTimes(1);
   recovery.cancel();
   jest.useRealTimers();
 });
