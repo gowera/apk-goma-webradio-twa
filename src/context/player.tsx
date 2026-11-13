@@ -110,6 +110,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     window.addEventListener("online", onOnline);
     document.addEventListener("visibilitychange", onVisible);
     audio.addEventListener("timeupdate", onTime);
+    const onProgress = () => recovery.progress(audio.currentTime);
+    audio.addEventListener("timeupdate", onProgress);
+    audio.addEventListener("emptied", onWaiting);
     audio.addEventListener("loadedmetadata", onMeta);
     audio.addEventListener("playing", onPlay);
     audio.addEventListener("pause", onPause);
