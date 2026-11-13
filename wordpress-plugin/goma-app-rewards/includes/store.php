@@ -18,8 +18,10 @@ final class GWR_Store {
           'newsletter'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, post_id bigint unsigned NOT NULL, user_id bigint unsigned NOT NULL, status varchar(20) NOT NULL, attempts int NOT NULL DEFAULT 0, next_attempt bigint NOT NULL DEFAULT 0, created datetime NOT NULL, PRIMARY KEY  (id), UNIQUE KEY post_user (post_id,user_id), KEY dispatch (status,next_attempt)",
           'friends'=>"user_a bigint unsigned NOT NULL, user_b bigint unsigned NOT NULL, requester bigint unsigned NOT NULL, status varchar(20) NOT NULL, created datetime NOT NULL, PRIMARY KEY  (user_a,user_b), KEY user_b (user_b)",
           'messages'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, sender bigint unsigned NOT NULL, recipient bigint unsigned NOT NULL, body text NOT NULL, created datetime NOT NULL, read_at datetime NULL, PRIMARY KEY  (id), KEY conversation (sender,recipient,id), KEY inbox (recipient,read_at)",
-          'club_posts'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, user_id bigint unsigned NOT NULL, body text NOT NULL, created datetime NOT NULL, PRIMARY KEY  (id), KEY user_id (user_id)",
-          'club_likes'=>"post_id bigint unsigned NOT NULL, user_id bigint unsigned NOT NULL, PRIMARY KEY  (post_id,user_id)"
+          'club_posts'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, user_id bigint unsigned NOT NULL, body text NOT NULL, image varchar(500) NOT NULL DEFAULT '', created datetime NOT NULL, PRIMARY KEY  (id), KEY user_id (user_id)",
+          'club_likes'=>"post_id bigint unsigned NOT NULL, user_id bigint unsigned NOT NULL, PRIMARY KEY  (post_id,user_id)",
+          'club_comments'=>"id bigint unsigned NOT NULL AUTO_INCREMENT, post_id bigint unsigned NOT NULL, user_id bigint unsigned NOT NULL, body text NOT NULL, created datetime NOT NULL, PRIMARY KEY  (id), KEY post_id (post_id)",
+          'devices'=>"token varchar(255) NOT NULL, user_id bigint unsigned NOT NULL, updated datetime NOT NULL, PRIMARY KEY  (token), KEY user_id (user_id)"
         ];
         // dbDelta requires one column/index definition per line during upgrades.
         foreach($schemas as $name=>$s) dbDelta('CREATE TABLE '.self::t($name)." (\n".str_replace(', ',",\n",$s)."\n) ENGINE=InnoDB $c;");
@@ -87,7 +89,8 @@ final class GWR_Store {
         foreach(['user_a','user_b'] as $c) $wpdb->delete(self::t('friends'),[$c=>$uid]);
         foreach(['sender','recipient'] as $c) $wpdb->delete(self::t('messages'),[$c=>$uid]);
         $wpdb->query($wpdb->prepare('DELETE l FROM '.self::t('club_likes').' l JOIN '.self::t('club_posts').' p ON p.id=l.post_id WHERE p.user_id=%d',$uid));
-        $wpdb->delete(self::t('club_likes'),['user_id'=>$uid]); $wpdb->delete(self::t('club_posts'),['user_id'=>$uid]);
+        $wpdb->query($wpdb->prepare('DELETE c FROM '.self::t('club_comments').' c JOIN '.self::t('club_posts').' p ON p.id=c.post_id WHERE p.user_id=%d',$uid));
+        foreach(['club_likes','club_comments','devices','club_posts'] as $t) $wpdb->delete(self::t($t),['user_id'=>$uid]);
         $wpdb->update(self::t('accounts'),['referrer'=>0],['referrer'=>$uid]);
     }
 }
