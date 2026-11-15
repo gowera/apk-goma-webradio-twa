@@ -14,7 +14,11 @@ final class GWR_Community {
     public static function own_upload($url) {
         $url=esc_url_raw(trim($url)); if ($url==='') return '';
         $base=trailingslashit(wp_get_upload_dir()['baseurl']).'goma-club/';
-        return str_starts_with($url,$base) ? $url : '';
+        if (!str_starts_with($url,$base)) return '';
+        $filename=substr($url,strlen($base));
+        if (!preg_match('/^[A-Za-z0-9_-]+\.(jpg|jpeg|png|webp)$/i',$filename)) return '';
+        $path=trailingslashit(wp_get_upload_dir()['basedir']).'goma-club/'.$filename;
+        return is_file($path) ? $url : '';
     }
     public static function save_profile($uid,$r) {
         $bio=trim(sanitize_textarea_field(wp_unslash((string)($r['bio']??get_user_meta($uid,'gwr_bio',true)))));
@@ -22,7 +26,11 @@ final class GWR_Community {
         if (mb_strlen($bio)>300) return GWR_API::error('Bio de 300 caractères maximum.');
         if (mb_strlen($city)>60) return GWR_API::error('Ville de 60 caractères maximum.');
         update_user_meta($uid,'gwr_bio',$bio); update_user_meta($uid,'gwr_city',$city);
-        foreach(['avatar','cover'] as $k) if (isset($r[$k])) { $v=(string)$r[$k]; update_user_meta($uid,'gwr_'.$k,$v===''?'':self::own_upload($v)); }
+        foreach(['avatar','cover'] as $k) if (isset($r[$k])) {
+            $v=(string)$r[$k]; $url=self::own_upload($v);
+            if ($v!=='' && (!$url || !in_array($url,get_user_meta($uid,'gwr_upload'),true))) return GWR_API::error('Utilisez une photo envoyée depuis votre compte.');
+            update_user_meta($uid,'gwr_'.$k,$url);
+        }
         return true;
     }
     public static function profile($r) {
@@ -54,6 +62,7 @@ final class GWR_Community {
         if (!empty($saved['error'])) return GWR_API::error('Envoi impossible. Réessayez.',503);
         $editor=wp_get_image_editor($saved['file']);
         if (!is_wp_error($editor)) { $editor->resize(1600,1600); $editor->save($saved['file']); }
+        add_user_meta($me,'gwr_upload',$saved['url']);
         return ['url'=>$saved['url']];
     }
     private static function post_author($id) {
@@ -63,7 +72,8 @@ final class GWR_Community {
     public static function comments($r) {
         global $wpdb; $me=GWR_API::uid(); $id=absint($r->get_param('post_id'));
         if (!self::post_author($id)) return GWR_API::error('Publication introuvable.',404);
-        $rows=$wpdb->get_results($wpdb->prepare('SELECT id,user_id,body,created FROM '.GWR_Store::t('club_comments').' WHERE post_id=%d ORDER BY id DESC LIMIT 100',$id),ARRAY_A);
+        $before=absint($r->get_param('before'));
+        $rows=$wpdb->get_results($wpdb->prepare('SELECT id,user_id,body,created FROM '.GWR_Store::t('club_comments').' WHERE post_id=%d AND (%d=0 OR id<%d) ORDER BY id DESC LIMIT 100',$id,$before,$before),ARRAY_A);
         $rows=array_values(array_filter($rows,fn($x)=>GWR_Social::listener((int)$x['user_id'])));
         return array_reverse(array_map(fn($x)=>['id'=>(int)$x['id'],'author'=>GWR_Social::person((int)$x['user_id'],$me),'mine'=>(int)$x['user_id']===$me,'body'=>$x['body'],'created'=>$x['created']],$rows));
     }
@@ -92,7 +102,8 @@ final class GWR_Community {
     public static function device($r) {
         global $wpdb; $token=preg_replace('/[^A-Za-z0-9:_\-]/','',(string)$r->get_param('token'));
         if (strlen($token)<20 || strlen($token)>255) return GWR_API::error('Jeton invalide.');
-        $wpdb->replace(GWR_Store::t('devices'),['token'=>$token,'user_id'=>GWR_API::uid(),'updated'=>current_time('mysql',true)]);
+        if ($r->get_param('enabled')===false) { $wpdb->delete(GWR_Store::t('devices'),['token'=>$token,'user_id'=>GWR_API::uid()]); return ['ok'=>true]; }
+        if ($wpdb->replace(GWR_Store::t('devices'),['token'=>$token,'user_id'=>GWR_API::uid(),'updated'=>current_time('mysql',true)])===false) return GWR_API::error('Alertes non enregistrées.',503);
         return ['ok'=>true];
     }
     public static function announce($post_id) { wp_schedule_single_event(time(),'gwr_club_push',[(int)$post_id]); }
@@ -120,7 +131,9 @@ final class GWR_Community {
             $msg=['token'=>$d->token,'notification'=>array_filter(['title'=>"$name a publié dans le club",'body'=>$body,'image'=>$post->image?:null]),'data'=>['url'=>$url,'notification_id'=>'goma-club-'.$post_id],'webpush'=>['fcm_options'=>['link'=>$url]]];
             $res=wp_remote_post('https://fcm.googleapis.com/v1/projects/'.rawurlencode($sa['project_id']).'/messages:send',['timeout'=>10,'headers'=>['Authorization'=>"Bearer $token",'Content-Type'=>'application/json'],'body'=>wp_json_encode(['message'=>$msg])]);
             $code=wp_remote_retrieve_response_code($res);
-            if ($code===404 || $code===400) $wpdb->delete(GWR_Store::t('devices'),['token'=>$d->token]);
+            $error=json_decode(wp_remote_retrieve_body($res),true);
+            $details=$error['error']['details']??[];
+            foreach($details as $detail) if (($detail['errorCode']??'')==='UNREGISTERED') $wpdb->delete(GWR_Store::t('devices'),['token'=>$d->token]);
         }
     }
     public static function menu() { add_submenu_page('goma-rewards','Notifications du club','Notifications du club','manage_options','goma-rewards-push',[self::class,'page']); }

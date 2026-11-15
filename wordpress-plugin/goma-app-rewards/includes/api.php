@@ -100,6 +100,8 @@ final class GWR_API {
     }
     public static function logout($r) {
         global $wpdb;
+        $device=(string)$r->get_param('device_token');
+        if ($device) $wpdb->delete(GWR_Store::t('devices'),['token'=>$device,'user_id'=>self::$uid]);
         $wpdb->delete(GWR_Store::t('sessions'),['hash'=>hash('sha256',substr($r->get_header('authorization'),7))]);
         return ['ok'=>true];
     }

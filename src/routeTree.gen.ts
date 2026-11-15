@@ -31,6 +31,7 @@ import { Route as AmisIndexRouteImport } from './routes/amis.index'
 import { Route as AmisIdRouteImport } from './routes/amis.$id'
 import { Route as ArticlesIndexRouteImport } from './routes/articles.index'
 import { Route as ArticlesSlugRouteImport } from './routes/articles.$slug'
+import { Route as AuditeursIdRouteImport } from './routes/auditeurs.$id'
 import { Route as CategoriesSlugRouteImport } from './routes/categories.$slug'
 import { Route as NewsSlugRouteImport } from './routes/news.$slug'
 import { Route as PodcastsIndexRouteImport } from './routes/podcasts.index'
@@ -148,6 +149,11 @@ const ArticlesSlugRoute = ArticlesSlugRouteImport.update({
   path: '/articles/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuditeursIdRoute = AuditeursIdRouteImport.update({
+  id: '/auditeurs/$id',
+  path: '/auditeurs/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
   id: '/categories/$slug',
   path: '/categories/$slug',
@@ -200,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/videos': typeof VideosRoute
   '/amis/$id': typeof AmisIdRoute
   '/articles/$slug': typeof ArticlesSlugRoute
+  '/auditeurs/$id': typeof AuditeursIdRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/news/$slug': typeof NewsSlugRoute
   '/podcasts/$id': typeof PodcastsIdRoute
@@ -230,6 +237,7 @@ export interface FileRoutesByTo {
   '/videos': typeof VideosRoute
   '/amis/$id': typeof AmisIdRoute
   '/articles/$slug': typeof ArticlesSlugRoute
+  '/auditeurs/$id': typeof AuditeursIdRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/news/$slug': typeof NewsSlugRoute
   '/podcasts/$id': typeof PodcastsIdRoute
@@ -261,6 +269,7 @@ export interface FileRoutesById {
   '/videos': typeof VideosRoute
   '/amis/$id': typeof AmisIdRoute
   '/articles/$slug': typeof ArticlesSlugRoute
+  '/auditeurs/$id': typeof AuditeursIdRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/news/$slug': typeof NewsSlugRoute
   '/podcasts/$id': typeof PodcastsIdRoute
@@ -293,6 +302,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/amis/$id'
     | '/articles/$slug'
+    | '/auditeurs/$id'
     | '/categories/$slug'
     | '/news/$slug'
     | '/podcasts/$id'
@@ -323,6 +333,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/amis/$id'
     | '/articles/$slug'
+    | '/auditeurs/$id'
     | '/categories/$slug'
     | '/news/$slug'
     | '/podcasts/$id'
@@ -353,6 +364,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/amis/$id'
     | '/articles/$slug'
+    | '/auditeurs/$id'
     | '/categories/$slug'
     | '/news/$slug'
     | '/podcasts/$id'
@@ -384,6 +396,7 @@ export interface RootRouteChildren {
   VideosRoute: typeof VideosRoute
   AmisIdRoute: typeof AmisIdRoute
   ArticlesSlugRoute: typeof ArticlesSlugRoute
+  AuditeursIdRoute: typeof AuditeursIdRoute
   CategoriesSlugRoute: typeof CategoriesSlugRoute
   NewsSlugRoute: typeof NewsSlugRoute
   PodcastsIdRoute: typeof PodcastsIdRoute
@@ -550,6 +563,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArticlesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auditeurs/$id': {
+      id: '/auditeurs/$id'
+      path: '/auditeurs/$id'
+      fullPath: '/auditeurs/$id'
+      preLoaderRoute: typeof AuditeursIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/categories/$slug': {
       id: '/categories/$slug'
       path: '/categories/$slug'
@@ -616,6 +636,7 @@ const rootRouteChildren: RootRouteChildren = {
   VideosRoute: VideosRoute,
   AmisIdRoute: AmisIdRoute,
   ArticlesSlugRoute: ArticlesSlugRoute,
+  AuditeursIdRoute: AuditeursIdRoute,
   CategoriesSlugRoute: CategoriesSlugRoute,
   NewsSlugRoute: NewsSlugRoute,
   PodcastsIdRoute: PodcastsIdRoute,
