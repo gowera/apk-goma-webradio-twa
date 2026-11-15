@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
+import { ProfileEditor } from '@/components/ProfileEditor';
+import { ListenerAvatar } from '@/components/ListenerAvatar';
 import { Screen, SectionHeader } from '@/components/Screen';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,13 +48,13 @@ function Rewards() {
     {!user ? <div className="py-10 text-center"><span className="material-symbols-outlined text-5xl text-brand">redeem</span><h2 className="mt-4 font-display text-2xl font-extrabold text-ink">Le club des auditeurs</h2><p className="mt-3 text-sm text-inkmute">Votre compte, vos invitations et vos cadeaux GOMA WEBRADIO.</p>{loading && <p className="mt-3 text-sm text-inkmute">Chargement…</p>}{error && <p role="alert" className="mt-3 text-sm text-blood">{error}</p>}<div className="mt-6 flex flex-wrap justify-center gap-3"><Button asChild className="bg-brand text-primary-foreground"><Link to="/inscription">Créer un compte</Link></Button><Button asChild variant="outline"><Link to="/connexion">Se connecter</Link></Button></div></div> : <div className="space-y-7 pt-6">
       <section className="-mx-4 border-b border-line bg-panel pb-5">
         <div className="relative h-40 overflow-hidden bg-brand-deep sm:h-48">
-          <img src="/play-bg.webp" alt="" className="h-full w-full object-cover opacity-60" />
+          <img src={user.cover || '/play-bg.webp'} alt="" className="h-full w-full object-cover opacity-60" />
           <div className="absolute inset-x-4 top-5 flex items-center gap-3 text-primary-foreground"><img src="/logo.png" alt="GOMA WEBRADIO" className="h-10 w-10 object-contain" /><div><p className="font-display text-lg font-extrabold">Le club des auditeurs</p><p className="text-xs">Fasi ya ndule na infos za palais</p></div></div>
         </div>
         <div className="relative px-4">
-          <div className="-mt-7 flex items-end justify-between gap-3"><span aria-hidden="true" className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 border-panel bg-panel2 font-display text-3xl font-extrabold text-brand">{user.name.trim().slice(0,1).toUpperCase()}</span><div className="flex gap-2"><Button asChild className="bg-brand text-primary-foreground"><Link to="/club"><span className="material-symbols-outlined">diversity_3</span>Le club</Link></Button><Button variant="outline" size="icon" title="Actualiser mes points" aria-label="Actualiser mes points" onClick={() => void refresh()} disabled={loading}><span className="material-symbols-outlined">refresh</span></Button></div></div>
+          <div className="-mt-7 flex items-end justify-between gap-3"><ListenerAvatar name={user.name} avatar={user.avatar} className="h-20 w-20 border-4 border-panel text-3xl" /><div className="flex gap-2"><Button asChild className="bg-brand text-primary-foreground"><Link to="/club"><span className="material-symbols-outlined">diversity_3</span>Le club</Link></Button><Button variant="outline" size="icon" title="Actualiser mes points" aria-label="Actualiser mes points" onClick={() => void refresh()} disabled={loading}><span className="material-symbols-outlined">refresh</span></Button></div></div>
           <h1 className="mt-3 break-words font-display text-2xl font-extrabold text-ink">{user.name}</h1>
-          <p className="mt-1 text-sm text-inkmute">Auditeur GOMA WEBRADIO</p>
+          <p className="mt-1 text-sm text-inkmute">{user.city || 'Auditeur GOMA WEBRADIO'}</p>{user.bio && <p className="mt-2 whitespace-pre-wrap break-words text-sm text-ink">{user.bio}</p>}<div className="mt-3 flex flex-wrap gap-2"><ProfileEditor /><Button variant="ghost" asChild><Link to="/auditeurs/$id" params={{ id: String(user.id) }}>Voir mon profil dans le club</Link></Button></div>
           <dl className="mt-5 grid grid-cols-3 divide-x divide-line border-y border-line py-4 text-center">
             <div><dd className="font-display text-2xl font-extrabold text-brand">{user.balance}</dd><dt className="mt-1 text-xs text-inkmute">Points</dt></div>
             <div><dd className="font-display text-2xl font-extrabold text-ink">{user.referrals}</dd><dt className="mt-1 text-xs text-inkmute">Parrainages</dt></div>

@@ -1,6 +1,6 @@
 import { rewardsRequest } from '@/lib/rewards-api';
 export type Relation = 'none' | 'friend' | 'incoming' | 'outgoing';
-export type Person = { id: number; name: string; relation: Relation; unread?: number; last?: { body: string; created: string } | null };
+export type Person = { id: number; name: string; avatar?: string; relation: Relation; unread?: number; last?: { body: string; created: string } | null };
 export type FriendLists = { friends: Person[]; incoming: Person[]; outgoing: Person[] };
 export type ChatMessage = { id: number; mine: boolean; body: string; created: string; seen?: boolean };
 export const searchListeners = (q: string) => rewardsRequest<Person[]>(`social/search?q=${encodeURIComponent(q)}`);
@@ -10,12 +10,21 @@ export const respondFriend = (user_id: number, accept: boolean) => rewardsReques
 export const removeFriend = (user_id: number) => rewardsRequest<{ relation: Relation }>('social/remove', { user_id });
 export const conversation = (user_id: number, after = 0, before = 0) => rewardsRequest<{ friend: Person; messages: ChatMessage[]; has_more: boolean; seen_ids: number[] }>(`social/messages?user_id=${user_id}&after=${after}&before=${before}`);
 export const sendMessage = (user_id: number, body: string) => rewardsRequest<ChatMessage>('social/send', { user_id, body });
-export type ClubPost = { id: number; author: Person; mine: boolean; body: string; created: string; likes: number; liked: boolean };
+export type ClubPost = { id: number; author: Person; mine: boolean; body: string; image?: string; comments?: number; created: string; likes: number; liked: boolean };
 export type Club = { members: number; posts: ClubPost[]; top: (Person & { points: number })[]; newest: Person[] };
-export const clubFeed = (before = 0) => rewardsRequest<Club>(`social/club?before=${before}`);
-export const clubPost = (body: string) => rewardsRequest<ClubPost>('social/post', { body });
+export const clubFeed = (before = 0, author = 0) => rewardsRequest<Club>(`social/club?before=${before}&author=${author}`);
+export const clubPost = (body: string, image = '') => rewardsRequest<ClubPost>('social/post', { body, image });
 export const clubLike = (post_id: number) => rewardsRequest<{ likes: number; liked: boolean }>('social/like', { post_id });
 export const clubUnpost = (post_id: number) => rewardsRequest<{ deleted: boolean }>('social/unpost', { post_id });
+export type ListenerProfile = Person & { cover: string; bio: string; city: string; points: number; friends: number; posts: number; since: string; mine: boolean };
+export type ClubComment = { id: number; author: Person; mine: boolean; body: string; created: string };
+export type ClubNotice = { id: number; author: Person; body: string; image: string; created: string };
+export const listenerProfile = (id = 0) => rewardsRequest<ListenerProfile>(`social/profile?user_id=${id}`);
+export const postComments = (id: number) => rewardsRequest<ClubComment[]>(`social/comments?post_id=${id}`);
+export const addComment = (post_id: number, body: string) => rewardsRequest<ClubComment>('social/comment', { post_id, body });
+export const deleteComment = (comment_id: number) => rewardsRequest('social/uncomment', { comment_id });
+export const clubNotices = () => rewardsRequest<ClubNotice[]>('social/notices');
+export const registerClubDevice = (token: string, enabled = true) => rewardsRequest('social/device', { token, enabled });
 /** Server datetimes are UTC "YYYY-MM-DD HH:MM:SS". */
 export const utcDate = (s: string) => new Date(s.replace(' ', 'T') + 'Z');
 export const timeAgo = (s: string) => { const m = Math.max(0, Math.round((Date.now() - utcDate(s).getTime()) / 60000)); return m < 1 ? 'à l’instant' : m < 60 ? `il y a ${m} min` : m < 1440 ? `il y a ${Math.round(m / 60)} h` : utcDate(s).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }); };

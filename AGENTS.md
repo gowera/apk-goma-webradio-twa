@@ -19,3 +19,4 @@
 - WordPress publication newsletters use a per post/user queue table processed by a 5-minute cron with signed, confirmed unsubscribe, so each subscriber gets each article at most once.
 - Keep friendships, private messages, read receipts and club posts/likes behind WordPress listener session checks; cursor pagination preserves history without exposing messages to non-friends.
 - Preserve migrated referral codes as WordPress user aliases while publishing new app invitation links, so older shared invitations remain usable.
+- Keep listener profile photos, comments and device registrations in the WordPress community module; accept only validated images uploaded by the acting member to prevent cross-account media reuse.

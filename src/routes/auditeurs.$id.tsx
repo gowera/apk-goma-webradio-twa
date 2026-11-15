@@ -1,0 +1,21 @@
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
+import { Screen } from '@/components/Screen';
+import { Button } from '@/components/ui/button';
+import { ListenerAvatar } from '@/components/ListenerAvatar';
+import { ProfileEditor } from '@/components/ProfileEditor';
+import { useRewards } from '@/context/rewards-context';
+import { listenerProfile, requestFriend, clubFeed, timeAgo, utcDate, type ListenerProfile, type ClubPost } from '@/lib/social-api';
+export const Route = createFileRoute('/auditeurs/$id')({
+  head: () => ({ meta: [{ title: 'Profil du club — GOMA WEBRADIO' }, { name: 'description', content: 'Rencontrez les membres du club des auditeurs GOMA WEBRADIO.' }, { property: 'og:title', content: 'Profil du club — GOMA WEBRADIO' }, { property: 'og:description', content: 'Profils et publications des auditeurs de GOMA WEBRADIO.' }, { property: 'og:type', content: 'profile' }, { name: 'twitter:card', content: 'summary' }, { name: 'robots', content: 'noindex' }] }), component: PublicProfile,
+});
+function PublicProfile() {
+  const { id } = Route.useParams(); const { user } = useRewards(); const [profile, setProfile] = useState<ListenerProfile | null>(null); const [posts, setPosts] = useState<ClubPost[]>([]); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
+  const load = async () => { try { const [p, c] = await Promise.all([listenerProfile(Number(id)), clubFeed(0, Number(id))]); setProfile(p); setPosts(c.posts); setError(''); } catch (e) { setError(e instanceof Error ? e.message : 'Profil indisponible.'); } };
+  useEffect(() => { setProfile(null); if (user) void load(); }, [id, user?.name, user?.avatar, user?.bio, user?.city, user?.cover]);
+  return <Screen title="Profil auditeur" back>{!user ? <Button asChild className="mt-6"><Link to="/connexion">Se connecter</Link></Button> : error ? <div role="alert" className="py-6 text-blood">{error}<Button variant="link" onClick={() => void load()}>Réessayer</Button></div> : !profile ? <div className="mt-4 h-56 animate-pulse bg-panel2" /> : <>
+    <section className="-mx-4 border-b border-line pb-5"><img src={profile.cover || '/play-bg.webp'} alt="Couverture" className="h-44 w-full object-cover sm:h-56" /><div className="px-4"><ListenerAvatar name={profile.name} avatar={profile.avatar} className="relative -mt-9 h-24 w-24 border-4 border-panel text-3xl" /><h1 className="mt-3 break-words font-display text-2xl font-extrabold text-ink">{profile.name}</h1>{profile.bio && <p className="mt-2 whitespace-pre-wrap break-words text-sm text-ink">{profile.bio}</p>}<p className="mt-2 text-sm text-inkmute">{profile.city && `${profile.city} · `}Membre depuis {utcDate(profile.since).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</p><div className="my-4 flex flex-wrap gap-5 text-sm text-ink"><span><b>{profile.points}</b> points</span><span><b>{profile.friends}</b> amis</span><span><b>{profile.posts}</b> publications</span></div>
+    {profile.mine ? <ProfileEditor /> : profile.relation === 'friend' ? <Button asChild><Link to="/amis/$id" params={{ id }}>Message</Link></Button> : <Button disabled={busy || profile.relation === 'outgoing'} onClick={async () => { setBusy(true); try { const r = await requestFriend(profile.id); setProfile(p => p && { ...p, relation: r.relation }); } catch (e) { setError(e instanceof Error ? e.message : 'Demande impossible.'); } finally { setBusy(false); } }}>{profile.relation === 'outgoing' ? 'Demande envoyée' : profile.relation === 'incoming' ? 'Accepter l’invitation' : 'Ajouter comme ami'}</Button>}</div></section>
+    <section className="py-5"><h2 className="font-display text-lg font-bold text-ink">Publications</h2>{!posts.length && <p className="mt-3 text-sm text-inkmute">Aucune publication pour le moment.</p>}{posts.map(p => <article key={p.id} className="border-b border-line py-4"><p className="text-xs text-inkmute">{timeAgo(p.created)}</p><p className="mt-2 whitespace-pre-wrap break-words text-sm text-ink">{p.body}</p>{p.image && <img src={p.image} alt="Photo partagée" className="mt-3 max-h-96 w-full object-contain" />}<Button asChild variant="link"><Link to="/club">Voir dans le club</Link></Button></article>)}</section>
+  </>}</Screen>;
+}

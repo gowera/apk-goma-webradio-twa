@@ -114,6 +114,7 @@ final class GWR_Social {
         if (!self::listener($me)) return GWR_API::error('Confirmez votre email pour publier dans le club.',403);
         $body=trim(sanitize_textarea_field(wp_unslash((string)$r->get_param('body'))));
         $image=GWR_Community::own_upload((string)$r->get_param('image'));
+        if ($r->get_param('image') && (!$image || !in_array($image,get_user_meta($me,'gwr_upload'),true))) return GWR_API::error('Utilisez une photo envoyée depuis votre compte.');
         if ($body==='' && $image) $body=' ';
         if ($body==='' || mb_strlen($body)>500) return GWR_API::error('Publication vide ou trop longue (500 caractères maximum).');
         if ((int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $p WHERE user_id=%d AND created>=%s",$me,gmdate('Y-m-d H:i:s',time()-600)))>=5) return GWR_API::error('Trop de publications. Patientez quelques minutes.',429);
