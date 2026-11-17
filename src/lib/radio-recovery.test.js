@@ -6,7 +6,7 @@ afterEach(() => jest.useRealTimers());
 
 function fixture() {
   jest.useFakeTimers();
-  const audio = { src: "https://stream.zeno.fm/4d61wprrp7zuv", load: jest.fn(), play: jest.fn(() => Promise.resolve()) };
+  const audio = { src: "https://stream.zeno.fm/6dylsbjrfuptv", load: jest.fn(), play: jest.fn(() => Promise.resolve()) };
   const recovery = new RadioRecovery(audio, jest.fn());
   recovery.start(audio.src);
   recovery.playing();
@@ -27,7 +27,7 @@ test("automatic radio interruptions retry indefinitely even when the server rema
   }
   expect(audio.play.mock.calls.length).toBeGreaterThanOrEqual(13);
   expect(recovery.isActive()).toBe(true);
-  expect(audio.src).toContain("4d61wprrp7zuv?t=");
+  expect(audio.src).toContain("6dylsbjrfuptv?t=");
   recovery.cancel();
 });
 
