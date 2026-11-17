@@ -12,7 +12,7 @@ import { RadioRecovery } from "@/lib/radio-recovery";
 import { PlayerContext, type PlayerState, type Track, type Quality } from "./player-context";
 export type { Track, Quality } from "./player-context";
 
-export const RADIO_STREAM = "https://stream.zeno.fm/4d61wprrp7zuv";
+export const RADIO_STREAM = "https://stream.zeno.fm/6dylsbjrfuptv";
 
 export const LIVE_TRACK: Track = {
   id: "live",
