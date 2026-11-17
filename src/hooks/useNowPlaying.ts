@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const META_URL = "https://api.zeno.fm/mounts/metadata/subscribe/4d61wprrp7zuv";
+const META_URL = "https://api.zeno.fm/mounts/metadata/subscribe/6dylsbjrfuptv";
 
 export type NowPlaying = {
   /** Titre en cours de diffusion (null si indisponible). */
